@@ -28,3 +28,5 @@ app.all("*", (req, res, next) => {
 
 // 11) Global Error Handler
 app.use(globalErrorHandler);
+
+export default app;
