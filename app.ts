@@ -3,6 +3,8 @@ import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { logger } from "./src/utils/logger";
 import { xss } from "express-xss-sanitizer";
+import { AppError } from "./src/utils/AppError";
+import { globalErrorHandler } from "./src/middlewares/errorHandler";
 
 const app: Express = express();
 
@@ -19,3 +21,10 @@ app.use(express.json({ limit: "10kb" }));
 
 // Data sanitization against XSS
 app.use(xss());
+
+app.all("*", (req, res, next) => {
+  next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
+});
+
+// 11) Global Error Handler
+app.use(globalErrorHandler);
