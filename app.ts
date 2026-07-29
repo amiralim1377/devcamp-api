@@ -5,6 +5,7 @@ import { logger } from "./src/utils/logger";
 import { xss } from "express-xss-sanitizer";
 import { AppError } from "./src/utils/AppError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
+import userRouter from "./src/routes/user-routes";
 
 const app: Express = express();
 
@@ -21,6 +22,8 @@ app.use(express.json({ limit: "10kb" }));
 
 // Data sanitization against XSS
 app.use(xss());
+
+app.use("/api/v1/users", userRouter);
 
 app.all("*", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
