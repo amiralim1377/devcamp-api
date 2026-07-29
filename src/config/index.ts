@@ -17,6 +17,9 @@ const config = {
   port: parseInt(getEnvVar("PORT", "3000")),
   nodeEnv: getEnvVar("NODE_ENV", "development"),
   mongoUri: getEnvVar("MONGO_URI"),
+  jwtSecret: getEnvVar("JWT_SECRET"),
+  jwtExpiresIn: getEnvVar("JWT_EXPIRES_IN"),
+  jwtCookieExpiresIn: getEnvVar("JWT_COOKIE_EXPIRES_IN"),
 };
 
 export { config };
