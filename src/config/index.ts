@@ -20,6 +20,7 @@ const config = {
   jwtExpiresIn: getEnvVar("JWT_EXPIRES_IN"),
   jwtCookieExpiresIn: getEnvVar("JWT_COOKIE_EXPIRES_IN"),
   databaseLocal: getEnvVar("DATABASE_LOCAL"),
+  clientUrl: getEnvVar("CLIENT_URL"),
 };
 
 export { config };
