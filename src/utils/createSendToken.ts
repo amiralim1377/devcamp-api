@@ -17,6 +17,8 @@ export const createSendToken = (
       Date.now() + Number(config.jwtCookieExpiresIn) * 24 * 60 * 60 * 1000,
     ),
     httpOnly: true,
+    secure: true,
+    sameSite: "none",
   };
 
   if (config.nodeEnv === "production") cookieOptions.secure = true;
