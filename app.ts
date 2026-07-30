@@ -25,7 +25,7 @@ app.use(xss());
 
 app.use("/api/v1/users", userRouter);
 
-app.all("*", (req, res, next) => {
+app.all("/{*splat}", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
 });
 
