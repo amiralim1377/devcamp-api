@@ -21,13 +21,10 @@ export const createSendToken = (
     sameSite: "none",
   };
 
-  if (config.nodeEnv === "production") cookieOptions.secure = true;
-
   res.cookie("jwt", token, cookieOptions);
 
   res.status(statusCode).json({
     status: "success",
-    token,
     data: {
       user,
     },
