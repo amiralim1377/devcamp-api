@@ -12,8 +12,6 @@ class AuthController {
 
     const newUser = await User.create({ name, password, email });
 
-    newUser.password = undefined;
-
     res.status(200).json({
       status: "success",
       message: "user created",
