@@ -6,8 +6,17 @@ import { xss } from "express-xss-sanitizer";
 import { AppError } from "./src/utils/AppError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
 import userRouter from "./src/routes/user-routes";
+import cors from "cors";
+import { config } from "./src/config";
 
 const app: Express = express();
+
+app.use(
+  cors({
+    origin: config.clientUrl,
+    credentials: true,
+  }),
+);
 
 // 1) Set security HTTP headers
 app.use(helmet());
