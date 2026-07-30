@@ -4,7 +4,7 @@ import { config } from "./src/config";
 
 const startServer = async (): Promise<void> => {
   try {
-    await mongoose.connect(config.mongoUri);
+    await mongoose.connect(config.databaseLocal);
     console.log("🌱 Successfully connected to MongoDB!");
 
     app.listen(config.port, () => {
