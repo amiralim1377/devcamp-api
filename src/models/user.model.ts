@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { model, Schema, Types } from "mongoose";
 
 export interface IUser {
@@ -56,6 +57,14 @@ userSchema.set("toJSON", {
     delete ret.passwordConfirm;
     return ret;
   },
+});
+
+userSchema.pre("save", async function () {
+  //نکن و عملیات ذخیره را ادامه بده HASH اگر رمز عبور تغییر نکرده،دوباره
+  if (!this.isModified("password")) return;
+
+  this.password = await bcrypt.hash(this.password, 12);
+  this.passwordConfirm = undefined;
 });
 
 const User = model<IUser>("User", userSchema);

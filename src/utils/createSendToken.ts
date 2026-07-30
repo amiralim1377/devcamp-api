@@ -1,11 +1,13 @@
-import { Response, CookieOptions } from "express";
+import { Response, Request, CookieOptions } from "express";
 import { config } from "../config/index.js";
 import { IUser } from "../models/user.model.js";
 import { signToken } from "./signToken.js";
 
+// user, statusCode, req, res
 export const createSendToken = (
   user: IUser,
   statusCode: number,
+  req: Request,
   res: Response,
 ) => {
   const token = signToken(user._id.toString());
