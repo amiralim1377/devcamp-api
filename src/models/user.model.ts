@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { model, Schema, Types } from "mongoose";
+import { Model, model, Schema, Types } from "mongoose";
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -10,7 +10,14 @@ export interface IUser {
   role: "student" | "instructor" | "admin";
 }
 
-const userSchema = new Schema<IUser>({
+export interface IUserMethods {
+  correctPassword(
+    candidatePassword: string,
+    userPassword: string,
+  ): Promise<boolean>;
+}
+
+const userSchema = new Schema<IUser, IUserMethods>({
   name: {
     type: String,
     required: [true, "Please tell us your name!"],
@@ -67,6 +74,13 @@ userSchema.pre("save", async function () {
   this.passwordConfirm = undefined;
 });
 
-const User = model<IUser>("User", userSchema);
+userSchema.methods.correctPassword = async function (
+  candidatePassword: string,
+  userPassword: string,
+): Promise<boolean> {
+  return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+const User = model<IUser, Model<IUser, {}, IUserMethods>>("User", userSchema);
 
 export default User;
