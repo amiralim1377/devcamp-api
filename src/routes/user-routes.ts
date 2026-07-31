@@ -7,10 +7,15 @@ const router = express.Router();
 
 router.post("/signup", validateRequest(signupSchema), authController.signup);
 router.post("/login", validateRequest(loginSchema), authController.login);
+router.post("/logout", validateRequest(loginSchema), authController.login);
 
 // Protect all routes after this middleware
 router.use(authController.protect);
 
-router.get("/me", userController.getMe);
+router.get(
+  "/me",
+  authController.restrictTo("instructor"),
+  userController.getMe,
+);
 
 export default router;
