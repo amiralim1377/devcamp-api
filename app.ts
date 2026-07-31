@@ -8,6 +8,7 @@ import { globalErrorHandler } from "./src/middlewares/errorHandler";
 import userRouter from "./src/routes/user-routes";
 import cors from "cors";
 import { config } from "./src/config";
+import cookieParser from "cookie-parser";
 
 const app: Express = express();
 
@@ -17,6 +18,8 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use(cookieParser());
 
 // 1) Set security HTTP headers
 app.use(helmet());
