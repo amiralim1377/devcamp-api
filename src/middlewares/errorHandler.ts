@@ -14,6 +14,13 @@ const handleCastErrorDB = (err: any) => {
   return new AppError(message, 400);
 };
 
+const handleDuplicateFieldsDB = (err: any) => {
+  const value = Object.values(err.keyValue)[0];
+
+  const message = `Duplicate field value: "${value}". Please use another value!`;
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err: any, req: Request, res: Response) => {
   // A) API
   if (req.originalUrl.startsWith("/api")) {
@@ -83,6 +90,7 @@ export const globalErrorHandler = (
 
   if (err.name === "ZodError") err = handleZodError(err);
   if (err.name === "CastError") err = handleCastErrorDB(err);
+  if (err.code === 11000) err = handleDuplicateFieldsDB(err);
 
   if (config.nodeEnv === "development") {
     sendErrorDev(err, req, res);
