@@ -21,6 +21,8 @@ const config = {
   jwtCookieExpiresIn: getEnvVar("JWT_COOKIE_EXPIRES_IN"),
   databaseLocal: getEnvVar("DATABASE_LOCAL"),
   clientUrl: getEnvVar("CLIENT_URL"),
+  jwtAccessExpiresIn: getEnvVar("JWT_ACCESS_EXPIRES_IN"),
+  jwtRefreshExpiresIn: getEnvVar("JWT_REFRESH_EXPIRES_IN"),
 };
 
 export { config };
