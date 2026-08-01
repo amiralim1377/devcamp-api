@@ -27,7 +27,22 @@ class BootcampService {
 
     return bootcamp;
   }
-  async updateBootcamp(bootcampId: string, updateData: Partial<IBootcamp>) {}
+  async updateBootcamp(bootcampId: string, updateData: Partial<IBootcamp>) {
+    const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
+      bootcampId,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+
+    if (!updatedBootcamp) {
+      throw new AppError(`Bootcamp not found with id of ${bootcampId}`, 404);
+    }
+
+    return updatedBootcamp;
+  }
 }
 
 export default new BootcampService();

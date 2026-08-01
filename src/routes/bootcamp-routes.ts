@@ -6,8 +6,6 @@ import { createBootcampSchema } from "../schemas/bootcamp.schema.js";
 
 const router = express.Router();
 
-// Protect all routes after this middleware
-
 router.get("/", bootcampController.getAllBootcamps);
 router.get("/:id", bootcampController.getSingleBootcamp);
 
@@ -18,5 +16,6 @@ router.post(
   bootcampController.createBootcamp,
 );
 router.delete("/:id", bootcampController.deleteBootcamp);
+router.patch("/:id", bootcampController.updateBootcamp);
 
 export default router;
