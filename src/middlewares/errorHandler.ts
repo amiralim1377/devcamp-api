@@ -9,6 +9,11 @@ const handleZodError = (error: ZodError) => {
   return new AppError(message, 400);
 };
 
+const handleCastErrorDB = (err: any) => {
+  const message = `Resource not found with id of ${err.value}`;
+  return new AppError(message, 400);
+};
+
 const sendErrorDev = (err: any, req: Request, res: Response) => {
   // A) API
   if (req.originalUrl.startsWith("/api")) {
@@ -74,8 +79,10 @@ export const globalErrorHandler = (
 ) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
+  err.message || "Internal Server Error";
 
   if (err.name === "ZodError") err = handleZodError(err);
+  if (err.name === "CastError") err = handleCastErrorDB(err);
 
   if (config.nodeEnv === "development") {
     sendErrorDev(err, req, res);
