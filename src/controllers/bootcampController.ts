@@ -62,6 +62,25 @@ class BootcampController {
       next(error);
     }
   }
+  async updateBootcamp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bootcampId = req.params.id as string;
+      const updatedData = req.body;
+
+      const updatedBootcamp = await bootcampService.updateBootcamp(
+        bootcampId,
+        updatedData,
+      );
+      res.status(200).json({
+        status: "success",
+        data: {
+          bootcamp: updatedBootcamp,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new BootcampController();
