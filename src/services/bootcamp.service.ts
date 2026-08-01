@@ -19,15 +19,35 @@ class BootcampService {
     }
     return bootcamp;
   }
-  async deleteBootcamp(bootcampId: string) {
-    const bootcamp = await Bootcamp.findByIdAndDelete(bootcampId);
+  async deleteBootcamp(bootcampId: string, userId: string, userRole: string) {
+    const bootcamp = await Bootcamp.findById(bootcampId);
     if (!bootcamp) {
       throw new AppError("Bootcamp not found", 404);
     }
 
+    if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
+      throw new AppError("User not authorized to delete this bootcamp", 403);
+    }
+
+    await bootcamp.deleteOne();
+
     return bootcamp;
   }
-  async updateBootcamp(bootcampId: string, updateData: Partial<IBootcamp>) {
+  async updateBootcamp(
+    bootcampId: string,
+    updateData: Partial<IBootcamp>,
+    userId: string,
+    userRole: string,
+  ) {
+    let bootcamp = await Bootcamp.findById(bootcampId);
+
+    if (!bootcamp) {
+      throw new AppError(`Bootcamp not found with id of ${bootcampId}`, 404);
+    }
+    if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
+      throw new AppError("User not authorized to update this bootcamp", 403);
+    }
+
     const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
       bootcampId,
       updateData,

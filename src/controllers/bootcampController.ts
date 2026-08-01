@@ -52,7 +52,10 @@ class BootcampController {
   async deleteBootcamp(req: Request, res: Response, next: NextFunction) {
     try {
       const bootcampId = req.params.id as string;
-      await bootcampService.deleteBootcamp(bootcampId);
+      const userId = req.user!._id.toString();
+      const userRole = req.user!.role;
+
+      await bootcampService.deleteBootcamp(bootcampId, userId, userRole);
 
       res.status(204).json({
         status: "success",
@@ -66,11 +69,16 @@ class BootcampController {
     try {
       const bootcampId = req.params.id as string;
       const updatedData = req.body;
+      const userId = req.user!._id.toString();
+      const userRole = req.user!.role;
 
       const updatedBootcamp = await bootcampService.updateBootcamp(
         bootcampId,
         updatedData,
+        userId,
+        userRole,
       );
+
       res.status(200).json({
         status: "success",
         data: {
