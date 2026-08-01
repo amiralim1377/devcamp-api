@@ -1,9 +1,12 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction, CookieOptions } from "express";
 import User from "../models/user.model.js";
 import { AppError } from "../utils/AppError.js";
 import { createSendToken } from "../utils/createSendToken.js";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { config } from "../config/index.js";
+import crypto from "crypto";
+import { Session } from "../models/session.model.js";
+import { signToken } from "../utils/signToken.js";
 
 class AuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
@@ -11,7 +14,6 @@ class AuthController {
 
     createSendToken(newUser, 201, req, res);
   }
-
   async login(req: Request, res: Response, next: NextFunction) {
     const { email, password } = req.body;
     const user = await User.findOne({ email }).select("+password");
@@ -83,12 +85,100 @@ class AuthController {
       next();
     };
   }
-  logout(req: Request, res: Response, next: NextFunction) {
-    res.cookie("jwt", "loggedout", {
-      expires: new Date(Date.now() + 10 * 1000),
+  async logout(req: Request, res: Response, next: NextFunction) {
+    const refreshToken = req.cookies.refresh_token;
+
+    if (refreshToken) {
+      const refreshTokenHash = crypto
+        .createHash("sha256")
+        .update(refreshToken)
+        .digest("hex");
+
+      await Session.findOneAndUpdate(
+        { tokenHash: refreshTokenHash, revokedAt: null },
+        { revokedAt: new Date() },
+      );
+    }
+
+    const cookieOptions: CookieOptions = {
       httpOnly: true,
+      secure: config.nodeEnv === "production",
+      sameSite: config.nodeEnv === "production" ? "none" : "lax",
+    };
+
+    res.cookie("access_token", "loggedout", {
+      ...cookieOptions,
+      expires: new Date(Date.now() + 10 * 1000),
     });
-    res.status(200).json({ status: "success" });
+
+    res.cookie("refresh_token", "loggedout", {
+      ...cookieOptions,
+      expires: new Date(Date.now() + 10 * 1000),
+    });
+
+    res
+      .status(200)
+      .json({ status: "success", message: "Logged out successfully" });
+  }
+  async refresh(req: Request, res: Response, next: NextFunction) {
+    const refreshToken = req.cookies.refresh_token;
+
+    if (!refreshToken) {
+      return next(
+        new AppError(
+          "You are not logged in! Please log in to get access.",
+          401,
+        ),
+      );
+    }
+
+    const refreshTokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
+    const session = await Session.findOne({
+      tokenHash: refreshTokenHash,
+      revokedAt: null,
+    });
+
+    if (!session) {
+      return next(new AppError("Session expired", 401));
+    }
+
+    const user = await User.findById(session.user);
+
+    if (!user) {
+      return next(new AppError("User no longer exists", 401));
+    }
+
+    const accessToken = signToken(user._id.toString());
+
+    const accessTokenExpiresAt = new Date(
+      Date.now() + Number(config.jwtExpiresIn) * 60 * 1000,
+    );
+
+    const cookieOptions: CookieOptions = {
+      httpOnly: true,
+
+      secure: config.nodeEnv === "production",
+
+      sameSite: config.nodeEnv === "production" ? "none" : "lax",
+
+      expires: accessTokenExpiresAt,
+    };
+
+    res.cookie("access_token", accessToken, cookieOptions);
+
+    // Update session activity
+    session.lastUsedAt = new Date();
+
+    await session.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Access token refreshed successfully",
+    });
   }
 }
 
