@@ -7,6 +7,8 @@ import { AppError } from "./src/utils/AppError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
 import userRouter from "./src/routes/user-routes";
 import authRouter from "./src/routes/auth-routes";
+import bootcampsRouter from "./src/routes/bootcamp-routes";
+
 import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
@@ -38,6 +40,7 @@ app.use(xss());
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/bootcamps", bootcampsRouter);
 
 app.all("/{*splat}", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
