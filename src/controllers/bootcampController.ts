@@ -33,6 +33,35 @@ class BootcampController {
       next(error);
     }
   }
+
+  async getSingleBootcamp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bootcampId = req.params.id as string;
+      const bootcamp = await bootcampService.getBootcamp(bootcampId);
+
+      res.status(200).json({
+        status: "success",
+        data: {
+          bootcamp,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  async deleteBootcamp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const bootcampId = req.params.id as string;
+      await bootcampService.deleteBootcamp(bootcampId);
+
+      res.status(204).json({
+        status: "success",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new BootcampController();
