@@ -9,6 +9,7 @@ const router = express.Router();
 // Protect all routes after this middleware
 
 router.get("/", bootcampController.getAllBootcamps);
+router.get("/:id", bootcampController.getSingleBootcamp);
 
 router.use(protect, restrictTo("instructor", "admin"));
 router.post(
@@ -16,5 +17,6 @@ router.post(
   validateRequest(createBootcampSchema),
   bootcampController.createBootcamp,
 );
+router.delete("/:id", bootcampController.deleteBootcamp);
 
 export default router;
