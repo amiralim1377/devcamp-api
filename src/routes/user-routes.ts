@@ -1,13 +1,8 @@
 import express from "express";
 import authController from "../controllers/authController.js";
-import { validateRequest } from "../middlewares/validateRequest.js";
-import { loginSchema, signupSchema } from "../schemas/auth.schema.js";
 import userController from "../controllers/userController.js";
-const router = express.Router();
 
-router.post("/signup", validateRequest(signupSchema), authController.signup);
-router.post("/login", validateRequest(loginSchema), authController.login);
-router.post("/logout", validateRequest(loginSchema), authController.login);
+const router = express.Router();
 
 // Protect all routes after this middleware
 router.use(authController.protect);
