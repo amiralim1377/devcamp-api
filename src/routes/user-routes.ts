@@ -1,16 +1,12 @@
 import express from "express";
-import authController from "../controllers/authController.js";
 import userController from "../controllers/userController.js";
+import { protect, restrictTo } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
 // Protect all routes after this middleware
-router.use(authController.protect);
+router.use(protect);
 
-router.get(
-  "/me",
-  authController.restrictTo("instructor"),
-  userController.getMe,
-);
+router.get("/me", restrictTo("instructor"), userController.getMe);
 
 export default router;
