@@ -30,7 +30,7 @@ const bootcampSchema = new Schema<IBootcamp>(
     description: {
       type: String,
       required: [true, "Bootcamp description is required"],
-      minlength: [50, "Description must be less than 50 characters"],
+      minlength: [50, "Description must be at least 50 characters"],
       trim: true,
     },
 
