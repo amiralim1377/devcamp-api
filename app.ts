@@ -6,6 +6,7 @@ import { xss } from "express-xss-sanitizer";
 import { AppError } from "./src/utils/AppError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
 import userRouter from "./src/routes/user-routes";
+import authRouter from "./src/routes/auth-routes";
 import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
@@ -36,6 +37,7 @@ app.use(express.json({ limit: "10kb" }));
 app.use(xss());
 
 app.use("/api/v1/users", userRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.all("/{*splat}", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
