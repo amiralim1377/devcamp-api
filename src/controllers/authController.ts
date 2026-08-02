@@ -94,6 +94,21 @@ class AuthController {
       next(error);
     }
   }
+  async updatePassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user!._id.toString();
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await authService.updatePassword(
+        userId,
+        currentPassword,
+        newPassword,
+      );
+      createSendToken(user, 200, req, res);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();

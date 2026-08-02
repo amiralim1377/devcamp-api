@@ -58,6 +58,25 @@ class AuthService {
 
     return user;
   }
+
+  async updatePassword(userId: string, currentPass: string, newPass: string) {
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      throw new AppError("User not found", 404);
+    }
+
+    const isMatch = await user.correctPassword(currentPass, user.password);
+
+    if (!isMatch) {
+      throw new AppError("Incorrect current password", 401);
+    }
+
+    user.password = newPass;
+
+    await user.save();
+
+    return user;
+  }
 }
 
 export default new AuthService();
