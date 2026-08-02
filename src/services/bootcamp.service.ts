@@ -1,4 +1,5 @@
 import { Bootcamp, IBootcamp } from "../models/bootcamp.model.js";
+import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
 
 class BootcampService {
@@ -7,11 +8,19 @@ class BootcampService {
     return newBootcamp;
   }
 
-  async getAllBootcamps() {
-    const bootcamps = await Bootcamp.find();
+  async getAllBootcamps(queryString: any) {
+    let features = new ApiFeatures(
+      Bootcamp.find().populate("courses"),
+      queryString,
+    )
+      .filter()
+      .select()
+      .sort()
+      .paginate();
+
+    const bootcamps = await features.query;
     return bootcamps;
   }
-
   async getBootcamp(bootcampId: string) {
     const bootcamp = await Bootcamp.findById(bootcampId).populate("courses");
     if (!bootcamp) {
