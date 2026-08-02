@@ -3,8 +3,11 @@ import { protect, restrictTo } from "../middlewares/auth.middleware.js";
 import bootcampController from "../controllers/bootcampController.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 import { createBootcampSchema } from "../schemas/bootcamp.schema.js";
+import courseRouter from "./course-routes.js";
 
 const router = express.Router();
+
+router.use("/:bootcampId/courses", courseRouter);
 
 router.get("/", bootcampController.getAllBootcamps);
 router.get("/:id", bootcampController.getSingleBootcamp);
