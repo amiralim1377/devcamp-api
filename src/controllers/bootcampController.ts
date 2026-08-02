@@ -21,7 +21,7 @@ class BootcampController {
 
   async getAllBootcamps(req: Request, res: Response, next: NextFunction) {
     try {
-      const bootcamps = await bootcampService.getAllBootcamps();
+      const bootcamps = await bootcampService.getAllBootcamps(req.query);
       res.status(200).json({
         status: "success",
         results: bootcamps.length,
