@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env server.ts",
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "data:import": "tsx --env-file=.env seeder.ts -i",
+    "data:destroy": "tsx --env-file=.env seeder.ts -d"
   },
   "keywords": [],
   "author": "",
