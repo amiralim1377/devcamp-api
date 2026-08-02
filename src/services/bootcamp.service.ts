@@ -21,6 +21,7 @@ class BootcampService {
     const bootcamps = await features.query;
     return bootcamps;
   }
+
   async getBootcamp(bootcampId: string) {
     const bootcamp = await Bootcamp.findById(bootcampId).populate("courses");
     if (!bootcamp) {
