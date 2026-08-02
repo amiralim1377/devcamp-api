@@ -2,6 +2,7 @@ import express, { Express } from "express";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
 import { logger } from "./src/utils/logger";
+import qs from "qs";
 import { xss } from "express-xss-sanitizer";
 import { AppError } from "./src/utils/AppError";
 import { globalErrorHandler } from "./src/middlewares/errorHandler";
@@ -9,7 +10,6 @@ import userRouter from "./src/routes/user-routes";
 import authRouter from "./src/routes/auth-routes";
 import bootcampsRouter from "./src/routes/bootcamp-routes";
 import courseRouter from "./src/routes/course-routes";
-
 import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
@@ -23,7 +23,13 @@ app.use(
   }),
 );
 
+// Parse Cookie header and populate req.cookies
+// Essential for reading JWT tokens or session data sent by the client
 app.use(cookieParser());
+
+// Override Express default query parser with 'qs'
+// Ensures complex/nested query strings (e.g., ?price[lte]=100) are correctly parsed into objects.
+app.set("query parser", (str: string) => qs.parse(str));
 
 // 1) Set security HTTP headers
 app.use(helmet());
