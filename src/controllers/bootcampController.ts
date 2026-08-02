@@ -100,7 +100,7 @@ class BootcampController {
       const userId = req.user!._id.toString();
       const userRole = req.user!.role;
 
-      const updatedBootcamp = await bootcampService.uploadPhoto(
+      const updatedBootcamp = await bootcampService.uploadBootcampImage(
         bootcampId,
         filename,
         userId,
