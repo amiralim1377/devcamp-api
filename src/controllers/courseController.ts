@@ -42,6 +42,45 @@ class CourseController {
       next(error);
     }
   }
+
+  async deleteCourse(req: Request, res: Response, next: NextFunction) {
+    try {
+      const courseId = req.params.id as string;
+      const userId = req.user!._id.toString();
+      const userRole = req.user!.role;
+
+      await courseService.deleteCourse(courseId, userId, userRole);
+      res.status(204).json({
+        status: "success",
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateCourse(req: Request, res: Response, next: NextFunction) {
+    try {
+      const courseId = req.params.id as string;
+      const userId = req.user!._id.toString();
+      const userRole = req.user!.role;
+
+      const course = await courseService.updateCourse(
+        courseId,
+        req.body,
+        userId,
+        userRole,
+      );
+      res.status(200).json({
+        status: "success",
+        data: {
+          course,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new CourseController();
