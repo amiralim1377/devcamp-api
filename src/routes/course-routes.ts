@@ -18,6 +18,7 @@ router
 
 router
   .route("/:id")
+  .get(courseController.getSingleCourse)
   .patch(
     protect,
     restrictTo("instructor", "admin"),

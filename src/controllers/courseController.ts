@@ -4,11 +4,31 @@ import courseService from "../services/course.service.js";
 class CourseController {
   async getAllCourses(req: Request, res: Response, next: NextFunction) {
     try {
-      const courses = await courseService.getAllCourses();
+      const bootcampId = req.params.bootcampId as string;
+      const courses = await courseService.getAllCourses(req.query, bootcampId);
 
       res.status(200).json({
         status: "success",
         results: courses.length,
+        data: {
+          courses,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // getSingleCourse
+
+  async getSingleCourse(req: Request, res: Response, next: NextFunction) {
+    try {
+      const courseId = req.params.id as string;
+
+      const courses = await courseService.getCourse(courseId);
+
+      res.status(200).json({
+        status: "success",
         data: {
           courses,
         },
