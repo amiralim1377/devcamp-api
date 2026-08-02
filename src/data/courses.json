@@ -1,0 +1,38 @@
+[
+  {
+    "title": "Node.js Basics & Core Modules",
+    "description": "Introduction to Node.js, the V8 engine, asynchronous programming, and core modules.",
+    "weeks": "2",
+    "tuition": 100,
+    "minimumSkill": "beginner",
+    "bootcamp": "5d713995b721c3bb38c1f5d0",
+    "instructor": "60d5ecb8b31123456789abcd"
+  },
+  {
+    "title": "Express.js Fundamentals",
+    "description": "Building APIs with Express, understanding middleware, routing, and global error handling.",
+    "weeks": "3",
+    "tuition": 150,
+    "minimumSkill": "beginner",
+    "bootcamp": "5d713995b721c3bb38c1f5d0",
+    "instructor": "60d5ecb8b31123456789abcd"
+  },
+  {
+    "title": "Next.js Architecture & App Router",
+    "description": "Deep dive into the Next.js app router, server components, and layout architecture for modern apps.",
+    "weeks": "4",
+    "tuition": 200,
+    "minimumSkill": "intermediate",
+    "bootcamp": "5d713a66ec8f2b88b8f830b8",
+    "instructor": "60d5ecb8b31123456789abcd"
+  },
+  {
+    "title": "Database Integration with Prisma",
+    "description": "Connecting Next.js to MongoDB using Prisma ORM, handling database mappers, and data validation with Zod.",
+    "weeks": "3",
+    "tuition": 250,
+    "minimumSkill": "advanced",
+    "bootcamp": "5d713a66ec8f2b88b8f830b8",
+    "instructor": "60d5ecb8b31123456789abcd"
+  }
+]
