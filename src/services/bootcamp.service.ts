@@ -13,7 +13,7 @@ class BootcampService {
   }
 
   async getBootcamp(bootcampId: string) {
-    const bootcamp = await Bootcamp.findById(bootcampId);
+    const bootcamp = await Bootcamp.findById(bootcampId).populate("courses");
     if (!bootcamp) {
       throw new AppError("Bootcamp not found", 404);
     }

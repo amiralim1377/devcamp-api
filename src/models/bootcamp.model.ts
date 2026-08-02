@@ -64,6 +64,22 @@ const bootcampSchema = new Schema<IBootcamp>(
   },
 );
 
+// virtual fields
+bootcampSchema.virtual("courses", {
+  // Q: Which model/collection should I get the data from?
+  // A: From the 'Course' model.
+  ref: "Course",
+  // Q: What is the primary key in the current model (Bootcamp) to match against?
+  // A: The '_id' of the current bootcamp.
+  localField: "_id",
+  // Q: Which field in the target model (Course) contains the reference to my ID?
+  // A: The 'bootcamp' field in the Course model.
+  foreignField: "bootcamp",
+  // Q: Should I return just one single document or an array of all matching documents?
+  // A: Find all of them (return an array), so justOne is 'false'.
+  justOne: false,
+});
+
 bootcampSchema.pre("save", function (this: IBootcamp) {
   if (this.isModified("title")) {
     this.slug = slugify(this.title, { lower: true });
