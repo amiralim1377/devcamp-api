@@ -7,6 +7,7 @@ import courseRouter from "./course-routes.js";
 
 const router = express.Router();
 
+// Nested Routes
 router.use("/:bootcampId/courses", courseRouter);
 
 router.get("/", bootcampController.getAllBootcamps);
