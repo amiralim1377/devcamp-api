@@ -1,11 +1,41 @@
 import { Bootcamp } from "../models/bootcamp.model.js";
 import { Course, ICourse } from "../models/course.model.js";
+import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
 
 class CourseService {
-  async getAllCourses() {
-    const courses = await Course.find();
+  async getAllCourses(queryString: any, bootcampId?: string) {
+    let baseQuery = bootcampId
+      ? Course.find({ bootcamp: bootcampId })
+      : Course.find();
+
+    let features = new ApiFeatures(baseQuery, queryString)
+      .filter()
+      .sort()
+      .select()
+      .paginate();
+
+    let query = features.query.populate({
+      path: "bootcamp",
+      select: "title description",
+    });
+
+    const courses = await query;
+
     return courses;
+  }
+
+  async getCourse(id: string) {
+    const course = await Course.findById(id).populate({
+      path: "bootcamp",
+      select: "title description",
+    });
+
+    if (!course) {
+      throw new AppError(`No course found with id of ${id}`, 404);
+    }
+
+    return course;
   }
 
   async createCourse(
