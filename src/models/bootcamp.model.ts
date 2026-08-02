@@ -59,6 +59,8 @@ const bootcampSchema = new Schema<IBootcamp>(
   },
   {
     timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
 
