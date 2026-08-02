@@ -16,4 +16,17 @@ router
     courseController.createCourse,
   );
 
+router
+  .route("/:id")
+  .patch(
+    protect,
+    restrictTo("instructor", "admin"),
+    courseController.updateCourse,
+  )
+  .delete(
+    protect,
+    restrictTo("instructor", "admin"),
+    courseController.deleteCourse,
+  );
+
 export default router;
