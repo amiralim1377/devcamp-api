@@ -31,6 +31,50 @@ class CourseService {
     const course = await Course.create(courseData);
     return course;
   }
+
+  async deleteCourse(id: string, userId: string, userRole: string) {
+    const course = await Course.findById(id);
+
+    if (!course) {
+      throw new AppError(`No course found with id of ${id}`, 404);
+    }
+
+    if (course.instructor.toString() !== userId && userRole !== "admin") {
+      throw new AppError(
+        `User not authorized to delete course ${course._id}`,
+        403,
+      );
+    }
+    await course.deleteOne();
+    return;
+  }
+
+  async updateCourse(
+    id: string,
+    updateData: Partial<ICourse>,
+    userId: string,
+    userRole: string,
+  ) {
+    let course = await Course.findById(id);
+
+    if (!course) {
+      throw new AppError(`No course found with id of ${id}`, 404);
+    }
+
+    if (course.instructor.toString() !== userId && userRole !== "admin") {
+      throw new AppError(
+        `User not authorized to update course ${course._id}`,
+        403,
+      );
+    }
+
+    course = await Course.findByIdAndUpdate(id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    return course;
+  }
 }
 
 export default new CourseService();
