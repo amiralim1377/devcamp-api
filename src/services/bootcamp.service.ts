@@ -1,6 +1,8 @@
 import { Bootcamp, IBootcamp } from "../models/bootcamp.model.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
+import fs from "fs/promises";
+import path from "path";
 
 class BootcampService {
   async createBootcamp(bootcampData: Partial<IBootcamp>) {
@@ -74,7 +76,7 @@ class BootcampService {
     return updatedBootcamp;
   }
 
-  async uploadPhoto(
+  async uploadBootcampImage(
     bootcampId: string,
     fileName: string,
     userId: string,
@@ -88,6 +90,23 @@ class BootcampService {
     if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
       throw new AppError("User not authorized to update this bootcamp", 403);
     }
+
+    if (bootcamp.photo && bootcamp.photo !== "no-photo.jpg") {
+      const oldImagePath = path.join(
+        process.cwd(),
+        "public",
+        "uploads",
+        bootcamp.photo,
+      );
+
+      try {
+        await fs.unlink(oldImagePath);
+        console.log(`Old image (${bootcamp.photo}) deleted successfully.`);
+      } catch (error) {
+        console.error("Could not delete old image:", error);
+      }
+    }
+
     bootcamp.photo = fileName;
     await bootcamp.save();
     return bootcamp;
