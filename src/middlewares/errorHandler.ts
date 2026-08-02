@@ -86,7 +86,7 @@ export const globalErrorHandler = (
 ) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "error";
-  err.message || "Internal Server Error";
+  err.message = err.message || "Internal Server Error";
 
   if (err.name === "ZodError") err = handleZodError(err);
   if (err.name === "CastError") err = handleCastErrorDB(err);
