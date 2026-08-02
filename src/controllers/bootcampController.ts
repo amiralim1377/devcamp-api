@@ -1,5 +1,6 @@
 import { NextFunction, Response, Request } from "express";
 import bootcampService from "../services/bootcamp.service.js";
+import { AppError } from "../utils/AppError.js";
 
 class BootcampController {
   async createBootcamp(req: Request, res: Response, next: NextFunction) {
@@ -82,6 +83,33 @@ class BootcampController {
       res.status(200).json({
         status: "success",
         data: {
+          bootcamp: updatedBootcamp,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+  async uploadBootcampPhoto(req: Request, res: Response, next: NextFunction) {
+    try {
+      if (!req.file) {
+        throw new AppError("Please upload a file", 400);
+      }
+      const bootcampId = req.params.id as string;
+      const filename = req.file.filename;
+      const userId = req.user!._id.toString();
+      const userRole = req.user!.role;
+
+      const updatedBootcamp = await bootcampService.uploadPhoto(
+        bootcampId,
+        filename,
+        userId,
+        userRole,
+      );
+      res.status(200).json({
+        status: "success",
+        data: {
+          photo: filename,
           bootcamp: updatedBootcamp,
         },
       });

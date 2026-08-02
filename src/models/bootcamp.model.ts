@@ -9,6 +9,7 @@ export interface IBootcamp extends Document {
   instructor: Types.ObjectId;
   averageRating: number;
   startDate: Date;
+  photo: string;
 }
 
 const bootcampSchema = new Schema<IBootcamp>(
@@ -55,6 +56,10 @@ const bootcampSchema = new Schema<IBootcamp>(
     startDate: {
       type: Date,
       required: [true, "Bootcamp start date is required"],
+    },
+    photo: {
+      type: String,
+      default: "no-photo.jpg",
     },
   },
   {
