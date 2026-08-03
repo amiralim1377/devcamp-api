@@ -33,6 +33,15 @@ class UserService {
     return user;
   }
 
+  async deleteMe(userId: string) {
+    const user = await User.findByIdAndUpdate(userId, { active: false });
+
+    if (!user) {
+      throw new AppError("کاربر یافت نشد", 404);
+    }
+    return null;
+  }
+
   async updateUser(userId: string, updateData: any) {
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
       new: true,
