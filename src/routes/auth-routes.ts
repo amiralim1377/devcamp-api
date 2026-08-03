@@ -13,6 +13,7 @@ router.post("/signup", validateRequest(signupSchema), authController.signup);
 router.post("/login", validateRequest(loginSchema), authController.login);
 router.post("/logout", authController.logout);
 router.post("/refresh", authController.refresh);
+
 router.put(
   "/updatepassword",
   validateRequest(updatePasswordSchema),

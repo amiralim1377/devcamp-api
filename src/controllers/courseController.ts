@@ -19,8 +19,6 @@ class CourseController {
     }
   }
 
-  // getSingleCourse
-
   async getSingleCourse(req: Request, res: Response, next: NextFunction) {
     try {
       const courseId = req.params.id as string;
