@@ -23,6 +23,10 @@ const config = {
   clientUrl: getEnvVar("CLIENT_URL"),
   jwtAccessExpiresIn: getEnvVar("JWT_ACCESS_EXPIRES_IN"),
   jwtRefreshExpiresIn: getEnvVar("JWT_REFRESH_EXPIRES_IN"),
+  emailHost: getEnvVar("EMAIL_HOST"),
+  emailPort: parseInt(getEnvVar("EMAIL_PORT", "587")),
+  emailUsername: getEnvVar("EMAIL_USERNAME"),
+  emailPassword: getEnvVar("EMAIL_PASSWORD"),
 };
 
 export { config };
