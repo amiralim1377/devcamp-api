@@ -1,5 +1,6 @@
 import bcrypt from "bcryptjs";
-import { Model, model, Schema, Types } from "mongoose";
+import mongoose, { Model, model, Schema, Types } from "mongoose";
+import crypto from "crypto";
 
 export interface IUser {
   _id: Types.ObjectId;
@@ -8,6 +9,9 @@ export interface IUser {
   password: string;
   passwordConfirm?: string;
   role: "student" | "instructor" | "admin";
+  active?: boolean;
+  passwordResetToken?: string;
+  passwordResetExpires?: Date;
 }
 
 export interface IUserMethods {
@@ -15,6 +19,8 @@ export interface IUserMethods {
     candidatePassword: string,
     userPassword: string,
   ): Promise<boolean>;
+
+  createPasswordResetToken(): string;
 }
 
 const userSchema = new Schema<IUser, IUserMethods>({
@@ -43,7 +49,6 @@ const userSchema = new Schema<IUser, IUserMethods>({
     required: [true, "Please provide a password!"],
     select: false,
   },
-
   passwordConfirm: {
     type: String,
     required: [true, "Please confirm your password"],
@@ -56,6 +61,15 @@ const userSchema = new Schema<IUser, IUserMethods>({
       message: "Passwords are not the same!",
     },
   },
+
+  active: {
+    type: Boolean,
+    default: true,
+    select: false,
+  },
+
+  passwordResetToken: String,
+  passwordResetExpires: Date,
 });
 
 userSchema.set("toJSON", {
@@ -74,11 +88,26 @@ userSchema.pre("save", async function () {
   this.passwordConfirm = undefined;
 });
 
+userSchema.pre(/^find/ as any, function (this: mongoose.Query<any, any>) {
+  this.find({ active: { $ne: false } });
+});
+
 userSchema.methods.correctPassword = async function (
   candidatePassword: string,
   userPassword: string,
 ): Promise<boolean> {
   return await bcrypt.compare(candidatePassword, userPassword);
+};
+
+userSchema.methods.createPasswordResetToken = function () {
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+  return resetToken;
 };
 
 const User = model<IUser, Model<IUser, {}, IUserMethods>>("User", userSchema);
