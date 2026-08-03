@@ -109,6 +109,10 @@ class AuthController {
       next(error);
     }
   }
+
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {}
+
+  async resetPassword(req: Request, res: Response, next: NextFunction) {}
 }
 
 export default new AuthController();
