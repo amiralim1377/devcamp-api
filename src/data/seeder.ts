@@ -26,7 +26,7 @@ const importData = async () => {
 
 const deleteData = async () => {
   try {
-    await mongoose.connect(process.env.MONGO_URI as string);
+    await mongoose.connect(process.env.DATABASE_LOCAL as string);
     console.log("🌱 Database Connected...");
 
     await Bootcamp.deleteMany();
