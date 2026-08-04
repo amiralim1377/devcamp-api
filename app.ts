@@ -10,10 +10,10 @@ import userRouter from "./src/routes/user-routes";
 import authRouter from "./src/routes/auth-routes";
 import bootcampsRouter from "./src/routes/bootcamp-routes";
 import courseRouter from "./src/routes/course-routes";
+import reviewRouter from "./src/routes/review-routes";
 import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
-import mongoSanitize from "express-mongo-sanitize";
 import rateLimit from "express-rate-limit";
 import hpp from "hpp";
 
@@ -44,7 +44,6 @@ app.use(pinoHttp({ logger }));
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
-app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
@@ -73,8 +72,9 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/bootcamps", bootcampsRouter);
 app.use("/api/v1/courses", courseRouter);
+app.use("/api/v1/reviews", reviewRouter);
 
-app.all("*", (req, res, next) => {
+app.all("/*splat", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
 });
 
