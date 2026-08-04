@@ -15,6 +15,7 @@ import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import { setupSwagger } from "./src/utils/swagger.js";
 import hpp from "hpp";
 
 const app: Express = express();
@@ -41,6 +42,8 @@ app.use(helmet());
 app.set("trust proxy", 1);
 
 app.use(pinoHttp({ logger }));
+
+setupSwagger(app);
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
