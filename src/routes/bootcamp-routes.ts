@@ -4,12 +4,14 @@ import bootcampController from "../controllers/bootcampController.js";
 import { validateRequest } from "../middlewares/validateRequest.js";
 import { createBootcampSchema } from "../schemas/bootcamp.schema.js";
 import courseRouter from "./course-routes.js";
+import reviewRouter from "./review-routes.js";
 import { upload } from "../middlewares/upload.middleware.js";
 import { resizeBootcampPhoto } from "../middlewares/image.middleware.js";
 
 const router = express.Router();
 
 // Nested Routes
+router.use("/:bootcampId/reviews", reviewRouter);
 router.use("/:bootcampId/courses", courseRouter);
 
 router.get("/", bootcampController.getAllBootcamps);

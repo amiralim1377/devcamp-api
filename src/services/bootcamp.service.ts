@@ -5,14 +5,18 @@ import fs from "fs/promises";
 import path from "path";
 
 class BootcampService {
-  async createBootcamp(bootcampData: Partial<IBootcamp>) {
-    const newBootcamp = await Bootcamp.create(bootcampData);
-    return newBootcamp;
-  }
-
   async getAllBootcamps(queryString: any) {
     let features = new ApiFeatures(
-      Bootcamp.find().populate("courses"),
+      Bootcamp.find().populate([
+        { path: "courses" },
+        {
+          path: "reviews",
+          populate: {
+            path: "user",
+            select: "name",
+          },
+        },
+      ]),
       queryString,
     )
       .filter()
@@ -30,6 +34,11 @@ class BootcampService {
       throw new AppError("Bootcamp not found", 404);
     }
     return bootcamp;
+  }
+
+  async createBootcamp(bootcampData: Partial<IBootcamp>) {
+    const newBootcamp = await Bootcamp.create(bootcampData);
+    return newBootcamp;
   }
   async deleteBootcamp(bootcampId: string, userId: string, userRole: string) {
     const bootcamp = await Bootcamp.findById(bootcampId);

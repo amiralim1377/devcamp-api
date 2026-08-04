@@ -3,23 +3,6 @@ import bootcampService from "../services/bootcamp.service.js";
 import { AppError } from "../utils/AppError.js";
 
 class BootcampController {
-  async createBootcamp(req: Request, res: Response, next: NextFunction) {
-    try {
-      req.body.instructor = req.user?._id;
-
-      const newBootcamp = await bootcampService.createBootcamp(req.body);
-
-      res.status(201).json({
-        status: "success",
-        data: {
-          bootcamp: newBootcamp,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
   async getAllBootcamps(req: Request, res: Response, next: NextFunction) {
     try {
       const bootcamps = await bootcampService.getAllBootcamps(req.query);
@@ -44,6 +27,23 @@ class BootcampController {
         status: "success",
         data: {
           bootcamp,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async createBootcamp(req: Request, res: Response, next: NextFunction) {
+    try {
+      req.body.instructor = req.user?._id;
+
+      const newBootcamp = await bootcampService.createBootcamp(req.body);
+
+      res.status(201).json({
+        status: "success",
+        data: {
+          bootcamp: newBootcamp,
         },
       });
     } catch (error) {

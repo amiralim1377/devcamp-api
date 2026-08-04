@@ -85,6 +85,13 @@ bootcampSchema.virtual("courses", {
   justOne: false,
 });
 
+bootcampSchema.virtual("reviews", {
+  ref: "Review",
+  localField: "_id",
+  foreignField: "bootcamp",
+  justOne: false,
+});
+
 bootcampSchema.pre("save", function (this: IBootcamp) {
   if (this.isModified("title")) {
     this.slug = slugify(this.title, { lower: true });
