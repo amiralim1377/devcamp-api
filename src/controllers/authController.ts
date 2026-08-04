@@ -7,6 +7,7 @@ import { config } from "../config/index.js";
 
 import { signToken } from "../utils/signToken.js";
 import authService from "../services/auth.service.js";
+import sendEmail from "../utils/email.js";
 
 class AuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
@@ -110,7 +111,42 @@ class AuthController {
     }
   }
 
-  async forgotPassword(req: Request, res: Response, next: NextFunction) {}
+  async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const user = await User.findOne({ email: req.body.email });
+      if (!user) {
+        return next(new AppError("کاربری با این ایمیل یافت نشد.", 404));
+      }
+      const resetToken = user.createPasswordResetToken();
+
+      await user.save({ validateBeforeSave: false });
+
+      const resetURL = `${req.protocol}://${req.get("host")}/api/v1/auth/resetpassword/${resetToken}`;
+      const message = `فراموشی رمز عبور 🔒\n\nبرای تنظیم مجدد رمز عبور خود، لطفاً یک درخواست PUT به همراه رمز عبور جدید به آدرس زیر ارسال کنید:\n\n${resetURL}\n\nاگر شما این درخواست را نداده‌اید، این ایمیل را نادیده بگیرید.`;
+      try {
+        await sendEmail({
+          email: user.email,
+          subject: "توکن بازیابی رمز عبور (معتبر برای ۱۰ دقیقه)",
+          message,
+        });
+
+        res.status(200).json({
+          status: "success",
+          message: "توکن بازیابی به ایمیل شما ارسال شد.",
+        });
+      } catch (error) {
+        user.passwordResetToken = undefined;
+        user.passwordResetExpires = undefined;
+        await user.save({ validateBeforeSave: false });
+
+        return next(
+          new AppError("خطا در ارسال ایمیل. لطفاً دوباره تلاش کنید.", 500),
+        );
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 
   async resetPassword(req: Request, res: Response, next: NextFunction) {}
 }
