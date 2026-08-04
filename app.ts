@@ -13,6 +13,9 @@ import courseRouter from "./src/routes/course-routes";
 import cors from "cors";
 import { config } from "./src/config";
 import cookieParser from "cookie-parser";
+import mongoSanitize from "express-mongo-sanitize";
+import rateLimit from "express-rate-limit";
+import hpp from "hpp";
 
 const app: Express = express();
 
@@ -41,16 +44,37 @@ app.use(pinoHttp({ logger }));
 
 // Body parser, reading data from body into req.body
 app.use(express.json({ limit: "10kb" }));
+app.use(mongoSanitize());
 
 // Data sanitization against XSS
 app.use(xss());
+
+const limiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 100,
+  message: "تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً کمی بعد تلاش کنید.",
+});
+app.use("/api", limiter);
+
+app.use(
+  hpp({
+    whitelist: [
+      "duration",
+      "ratingsQuantity",
+      "averageRating",
+      "maxGroupSize",
+      "difficulty",
+      "price",
+    ],
+  }),
+);
 
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/bootcamps", bootcampsRouter);
 app.use("/api/v1/courses", courseRouter);
 
-app.all("/{*splat}", (req, res, next) => {
+app.all("*", (req, res, next) => {
   next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
 });
 
