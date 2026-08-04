@@ -2,12 +2,11 @@ import { Request, Response, NextFunction, CookieOptions } from "express";
 import User from "../models/user.model.js";
 import { AppError } from "../utils/AppError.js";
 import { createSendToken } from "../utils/createSendToken.js";
-import jwt from "jsonwebtoken";
 import { config } from "../config/index.js";
-
 import { signToken } from "../utils/signToken.js";
 import authService from "../services/auth.service.js";
 import sendEmail from "../utils/email.js";
+import crypto from "crypto";
 
 class AuthController {
   async signup(req: Request, res: Response, next: NextFunction) {
@@ -148,7 +147,37 @@ class AuthController {
     }
   }
 
-  async resetPassword(req: Request, res: Response, next: NextFunction) {}
+  async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(req.params.token as string)
+        .digest("hex");
+
+      const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() },
+      });
+
+      if (!user) {
+        return next(new AppError("توکن نامعتبر است یا منقضی شده است.", 400));
+      }
+
+      user.password = req.body.password;
+      user.passwordConfirm = req.body.passwordConfirm;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+
+      await user.save();
+
+      res.status(200).json({
+        status: "success",
+        message: "رمز عبور با موفقیت تغییر کرد. اکنون می‌توانید وارد شوید.",
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new AuthController();
