@@ -27,6 +27,7 @@ const config = {
   emailPort: parseInt(getEnvVar("EMAIL_PORT", "587")),
   emailUsername: getEnvVar("EMAIL_USERNAME"),
   emailPassword: getEnvVar("EMAIL_PASSWORD"),
+  logLevel: getEnvVar("LOG_LEVEL", "info"),
 };
 
 export { config };
