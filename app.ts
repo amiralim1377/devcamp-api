@@ -1,24 +1,29 @@
 import express, { Express } from "express";
 import helmet from "helmet";
 import pinoHttp from "pino-http";
-import { logger } from "./src/utils/logger";
 import qs from "qs";
 import { xss } from "express-xss-sanitizer";
-import { AppError } from "./src/utils/AppError";
-import { globalErrorHandler } from "./src/middlewares/errorHandler";
-import userRouter from "./src/routes/user-routes";
-import authRouter from "./src/routes/auth-routes";
-import bootcampsRouter from "./src/routes/bootcamp-routes";
-import courseRouter from "./src/routes/course-routes";
-import reviewRouter from "./src/routes/review-routes";
 import cors from "cors";
-import { config } from "./src/config";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-import { setupSwagger } from "./src/utils/swagger.js";
 import hpp from "hpp";
+import { pinoLogger } from "./src/utils/logger.js";
+import { AppError } from "./src/utils/AppError.js";
+import { globalErrorHandler } from "./src/middlewares/errorHandler.js";
+import userRouter from "./src/routes/user-routes.js";
+import authRouter from "./src/routes/auth-routes.js";
+import bootcampsRouter from "./src/routes/bootcamp-routes.js";
+import courseRouter from "./src/routes/course-routes.js";
+import reviewRouter from "./src/routes/review-routes.js";
+import { config } from "./src/config/index.js";
+import { setupSwagger } from "./src/utils/swagger.js";
+import { requestIdMiddleware } from "./src/middlewares/requestId.middleware.js";
+import { HttpCodes } from "./src/utils/HttpCodes.js";
+import { AppCodes } from "./src/utils/AppCodes.js";
 
 const app: Express = express();
+
+app.use(requestIdMiddleware);
 
 app.use(
   cors({
@@ -28,11 +33,9 @@ app.use(
 );
 
 // Parse Cookie header and populate req.cookies
-// Essential for reading JWT tokens or session data sent by the client
 app.use(cookieParser());
 
 // Override Express default query parser with 'qs'
-// Ensures complex/nested query strings (e.g., ?price[lte]=100) are correctly parsed into objects.
 app.set("query parser", (str: string) => qs.parse(str));
 
 // 1) Set security HTTP headers
@@ -41,7 +44,8 @@ app.use(helmet());
 // 2) Trust proxy for production environment
 app.set("trust proxy", 1);
 
-app.use(pinoHttp({ logger }));
+// 👈 اتصال pino-http به لاگر
+app.use(pinoHttp({ logger: pinoLogger }));
 
 setupSwagger(app);
 
@@ -78,10 +82,16 @@ app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/reviews", reviewRouter);
 
 app.all("/*splat", (req, res, next) => {
-  next(new AppError(`Cannot find ${req.originalUrl} on this server!`, 404));
+  next(
+    AppError.create(
+      HttpCodes.NOT_FOUND,
+      AppCodes.ROUTE_NOT_FOUND,
+      `Cannot find ${req.originalUrl} on this server!`,
+    ),
+  );
 });
 
-// 11) Global Error Handler
+//  Global Error Handler
 app.use(globalErrorHandler);
 
 export default app;
