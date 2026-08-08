@@ -1,0 +1,18 @@
+export enum AppCodes {
+  // موفقیت‌آمیز
+  SUCCESS = "SUCCESS",
+
+  // خطاهای عمومی
+  INVALID_INPUT = "ERR_GEN_001",
+  ROUTE_NOT_FOUND = "ERR_GEN_002",
+  INTERNAL_SERVER_ERROR = "ERR_GEN_500",
+
+  //(Auth)
+  UNAUTHORIZED_ACCESS = "ERR_AUTH_001",
+  INVALID_CREDENTIALS = "ERR_AUTH_002",
+  TOKEN_EXPIRED = "ERR_AUTH_003",
+
+  // خطاهای بوت‌کمپ و دوره‌ها
+  BOOTCAMP_NOT_FOUND = "ERR_BOOTCAMP_001",
+  COURSE_NOT_FOUND = "ERR_COURSE_001",
+}
