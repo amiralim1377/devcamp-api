@@ -1,4 +1,4 @@
-import { describe, it, expect, Mock, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ApiFeatures } from "./ApiFeatures.js";
 
 describe("ApiFeatures class", () => {
