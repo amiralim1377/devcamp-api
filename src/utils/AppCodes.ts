@@ -17,4 +17,7 @@ export enum AppCodes {
   // خطاهای بوت‌کمپ و دوره‌ها
   BOOTCAMP_NOT_FOUND = "ERR_BOOTCAMP_001",
   COURSE_NOT_FOUND = "ERR_COURSE_001",
+
+  // خطاهای نظرات (Reviews)
+  REVIEW_NOT_FOUND = "ERR_REVIEW_001",
 }
