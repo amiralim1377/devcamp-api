@@ -1,6 +1,8 @@
 import { Bootcamp, IBootcamp } from "../models/bootcamp.model.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 import fs from "fs/promises";
 import path from "path";
 
@@ -30,9 +32,16 @@ class BootcampService {
 
   async getBootcamp(bootcampId: string) {
     const bootcamp = await Bootcamp.findById(bootcampId).populate("courses");
+
     if (!bootcamp) {
-      throw new AppError("Bootcamp not found", 404);
+      AppError.throwError(
+        "BootcampService.getBootcamp",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        "Bootcamp not found",
+      );
     }
+
     return bootcamp;
   }
 
@@ -40,20 +49,33 @@ class BootcampService {
     const newBootcamp = await Bootcamp.create(bootcampData);
     return newBootcamp;
   }
+
   async deleteBootcamp(bootcampId: string, userId: string, userRole: string) {
     const bootcamp = await Bootcamp.findById(bootcampId);
+
     if (!bootcamp) {
-      throw new AppError("Bootcamp not found", 404);
+      AppError.throwError(
+        "BootcampService.deleteBootcamp",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        "Bootcamp not found",
+      );
     }
 
     if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError("User not authorized to delete this bootcamp", 403);
+      AppError.throwError(
+        "BootcampService.deleteBootcamp",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "User not authorized to delete this bootcamp",
+      );
     }
 
     await bootcamp.deleteOne();
 
     return bootcamp;
   }
+
   async updateBootcamp(
     bootcampId: string,
     updateData: Partial<IBootcamp>,
@@ -63,10 +85,21 @@ class BootcampService {
     let bootcamp = await Bootcamp.findById(bootcampId);
 
     if (!bootcamp) {
-      throw new AppError(`Bootcamp not found with id of ${bootcampId}`, 404);
+      AppError.throwError(
+        "BootcampService.updateBootcamp",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        `Bootcamp not found with id of ${bootcampId}`,
+      );
     }
+
     if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError("User not authorized to update this bootcamp", 403);
+      AppError.throwError(
+        "BootcampService.updateBootcamp",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "User not authorized to update this bootcamp",
+      );
     }
 
     const updatedBootcamp = await Bootcamp.findByIdAndUpdate(
@@ -79,7 +112,12 @@ class BootcampService {
     );
 
     if (!updatedBootcamp) {
-      throw new AppError(`Bootcamp not found with id of ${bootcampId}`, 404);
+      AppError.throwError(
+        "BootcampService.updateBootcamp",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        `Bootcamp not found with id of ${bootcampId}`,
+      );
     }
 
     return updatedBootcamp;
@@ -92,12 +130,23 @@ class BootcampService {
     userRole: string,
   ) {
     const bootcamp = await Bootcamp.findById(bootcampId);
+
     if (!bootcamp) {
-      throw new AppError("Bootcamp not found", 404);
+      AppError.throwError(
+        "BootcampService.uploadBootcampImage",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        "Bootcamp not found",
+      );
     }
 
     if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError("User not authorized to update this bootcamp", 403);
+      AppError.throwError(
+        "BootcampService.uploadBootcampImage",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "User not authorized to update this bootcamp",
+      );
     }
 
     if (bootcamp.photo && bootcamp.photo !== "no-photo.jpg") {

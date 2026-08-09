@@ -1,6 +1,8 @@
 import User, { IUser } from "../models/user.model.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 class UserService {
   async getAllUsers(queryString: any) {
@@ -13,13 +15,22 @@ class UserService {
     const users = await features.query;
     return users;
   }
+
   async getUser(userId: string) {
-    const user = User.findById(userId);
+    const user = await User.findById(userId);
+
     if (!user) {
-      throw new AppError("کاربری با این شناسه یافت نشد", 404);
+      AppError.throwError(
+        "UserService.getUser",
+        HttpCodes.NOT_FOUND,
+        AppCodes.USER_NOT_FOUND,
+        "کاربری با این شناسه یافت نشد",
+      );
     }
+
     return user;
   }
+
   async createUser(userData: Partial<IUser>) {
     const user = await User.create(userData);
     return user;
@@ -27,9 +38,16 @@ class UserService {
 
   async deleteUser(userId: string) {
     const user = await User.findByIdAndDelete(userId);
+
     if (!user) {
-      throw new AppError("کاربری با این شناسه یافت نشد", 404);
+      AppError.throwError(
+        "UserService.deleteUser",
+        HttpCodes.NOT_FOUND,
+        AppCodes.USER_NOT_FOUND,
+        "کاربری با این شناسه یافت نشد",
+      );
     }
+
     return user;
   }
 
@@ -37,8 +55,14 @@ class UserService {
     const user = await User.findByIdAndUpdate(userId, { active: false });
 
     if (!user) {
-      throw new AppError("کاربر یافت نشد", 404);
+      AppError.throwError(
+        "UserService.deleteMe",
+        HttpCodes.NOT_FOUND,
+        AppCodes.USER_NOT_FOUND,
+        "کاربر یافت نشد",
+      );
     }
+
     return null;
   }
 
@@ -47,8 +71,14 @@ class UserService {
       new: true,
       runValidators: true,
     });
+
     if (!updatedUser) {
-      throw new AppError("User not found", 404);
+      AppError.throwError(
+        "UserService.updateUser",
+        HttpCodes.NOT_FOUND,
+        AppCodes.USER_NOT_FOUND,
+        "User not found",
+      );
     }
 
     return updatedUser;

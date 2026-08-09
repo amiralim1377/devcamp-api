@@ -1,6 +1,8 @@
 import { Session } from "../models/session.model.js";
 import User, { IUser } from "../models/user.model.js";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 import crypto from "crypto";
 
 class AuthService {
@@ -16,7 +18,12 @@ class AuthService {
       !user ||
       !(await user.correctPassword(password, user.password as string))
     ) {
-      throw new AppError("Incorrect email or password", 401);
+      AppError.throwError(
+        "AuthService.login",
+        HttpCodes.UNAUTHORIZED,
+        AppCodes.INVALID_CREDENTIALS,
+        "Incorrect email or password",
+      );
     }
     return user;
   }
@@ -45,12 +52,22 @@ class AuthService {
     });
 
     if (!session) {
-      throw new AppError("Session expired", 401);
+      AppError.throwError(
+        "AuthService.refreshSession",
+        HttpCodes.UNAUTHORIZED,
+        AppCodes.TOKEN_EXPIRED,
+        "Session expired",
+      );
     }
 
     const user = await User.findById(session.user);
     if (!user) {
-      throw new AppError("User no longer exists", 401);
+      AppError.throwError(
+        "AuthService.refreshSession",
+        HttpCodes.UNAUTHORIZED,
+        AppCodes.USER_NOT_FOUND,
+        "User no longer exists",
+      );
     }
 
     session.lastUsedAt = new Date();
@@ -62,13 +79,23 @@ class AuthService {
   async updatePassword(userId: string, currentPass: string, newPass: string) {
     const user = await User.findById(userId).select("+password");
     if (!user) {
-      throw new AppError("User not found", 404);
+      AppError.throwError(
+        "AuthService.updatePassword",
+        HttpCodes.NOT_FOUND,
+        AppCodes.USER_NOT_FOUND,
+        "User not found",
+      );
     }
 
     const isMatch = await user.correctPassword(currentPass, user.password);
 
     if (!isMatch) {
-      throw new AppError("Incorrect current password", 401);
+      AppError.throwError(
+        "AuthService.updatePassword",
+        HttpCodes.UNAUTHORIZED,
+        AppCodes.INVALID_CREDENTIALS,
+        "Incorrect current password",
+      );
     }
 
     user.password = newPass;

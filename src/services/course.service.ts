@@ -2,6 +2,8 @@ import { Bootcamp } from "../models/bootcamp.model.js";
 import { Course, ICourse } from "../models/course.model.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 class CourseService {
   async getAllCourses(queryString: any, bootcampId?: string) {
@@ -32,7 +34,12 @@ class CourseService {
     });
 
     if (!course) {
-      throw new AppError(`No course found with id of ${id}`, 404);
+      AppError.throwError(
+        "CourseService.getCourse",
+        HttpCodes.NOT_FOUND,
+        AppCodes.COURSE_NOT_FOUND,
+        `No course found with id of ${id}`,
+      );
     }
 
     return course;
@@ -47,15 +54,23 @@ class CourseService {
     const bootcamp = await Bootcamp.findById(bootcampId);
 
     if (!bootcamp) {
-      throw new AppError(`No bootcamp found with id of ${bootcampId}`, 404);
+      AppError.throwError(
+        "CourseService.createCourse",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        `No bootcamp found with id of ${bootcampId}`,
+      );
     }
 
     if (bootcamp.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError(
-        `User not authorized to add a course to this bootcamp`,
-        403,
+      AppError.throwError(
+        "CourseService.createCourse",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "User not authorized to add a course to this bootcamp",
       );
     }
+
     courseData.bootcamp = bootcampId as any;
     courseData.instructor = userId as any;
     const course = await Course.create(courseData);
@@ -66,15 +81,23 @@ class CourseService {
     const course = await Course.findById(id);
 
     if (!course) {
-      throw new AppError(`No course found with id of ${id}`, 404);
+      AppError.throwError(
+        "CourseService.deleteCourse",
+        HttpCodes.NOT_FOUND,
+        AppCodes.COURSE_NOT_FOUND,
+        `No course found with id of ${id}`,
+      );
     }
 
     if (course.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError(
+      AppError.throwError(
+        "CourseService.deleteCourse",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
         `User not authorized to delete course ${course._id}`,
-        403,
       );
     }
+
     await course.deleteOne();
     return;
   }
@@ -88,13 +111,20 @@ class CourseService {
     let course = await Course.findById(id);
 
     if (!course) {
-      throw new AppError(`No course found with id of ${id}`, 404);
+      AppError.throwError(
+        "CourseService.updateCourse",
+        HttpCodes.NOT_FOUND,
+        AppCodes.COURSE_NOT_FOUND,
+        `No course found with id of ${id}`,
+      );
     }
 
     if (course.instructor.toString() !== userId && userRole !== "admin") {
-      throw new AppError(
+      AppError.throwError(
+        "CourseService.updateCourse",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
         `User not authorized to update course ${course._id}`,
-        403,
       );
     }
 

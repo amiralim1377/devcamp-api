@@ -2,6 +2,8 @@ import { Bootcamp } from "../models/bootcamp.model.js";
 import { IReview, Review } from "../models/review.model.js";
 import { ApiFeatures } from "../utils/ApiFeatures.js";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 class ReviewService {
   async getReviews(queryString: any, bootcampId?: string) {
@@ -21,13 +23,20 @@ class ReviewService {
 
     return await features.query;
   }
+
   async getReview(id: string) {
     const review = await Review.findById(id).populate({
       path: "bootcamp",
       select: "title description",
     });
+
     if (!review) {
-      throw new AppError(`نظری با شناسه ${id} یافت نشد`, 404);
+      AppError.throwError(
+        "ReviewService.getReview",
+        HttpCodes.NOT_FOUND,
+        AppCodes.REVIEW_NOT_FOUND, // مطمئن شوید این مقدار در AppCodes تعریف شده است
+        `نظری با شناسه ${id} یافت نشد`,
+      );
     }
 
     return review;
@@ -39,8 +48,14 @@ class ReviewService {
     reviewData: Partial<IReview>,
   ) {
     const bootcamp = await Bootcamp.findById(bootcampId);
+
     if (!bootcamp) {
-      throw new AppError(`بوت‌کمپی با شناسه ${bootcampId} یافت نشد`, 404);
+      AppError.throwError(
+        "ReviewService.createReview",
+        HttpCodes.NOT_FOUND,
+        AppCodes.BOOTCAMP_NOT_FOUND,
+        `بوت‌کمپی با شناسه ${bootcampId} یافت نشد`,
+      );
     }
 
     reviewData.bootcamp = bootcampId as any;
@@ -58,13 +73,25 @@ class ReviewService {
     updateData: Partial<IReview>,
   ) {
     const review = await Review.findById(id);
+
     if (!review) {
-      throw new AppError(`نظری با شناسه ${id} یافت نشد`, 404);
+      AppError.throwError(
+        "ReviewService.updateReview",
+        HttpCodes.NOT_FOUND,
+        AppCodes.REVIEW_NOT_FOUND,
+        `نظری با شناسه ${id} یافت نشد`,
+      );
     }
 
-    if (review.user.toString() !== userId && userRole! == "admin") {
-      throw new AppError("شما دسترسی لازم برای ویرایش این نظر را ندارید", 403);
+    if (review.user.toString() !== userId && userRole !== "admin") {
+      AppError.throwError(
+        "ReviewService.updateReview",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "شما دسترسی لازم برای ویرایش این نظر را ندارید",
+      );
     }
+
     if (updateData.title) review.title = updateData.title;
     if (updateData.text) review.text = updateData.text;
     if (updateData.rating) review.rating = updateData.rating;
@@ -77,11 +104,21 @@ class ReviewService {
     const review = await Review.findById(id);
 
     if (!review) {
-      throw new AppError(`نظری با شناسه ${id} یافت نشد`, 404);
+      AppError.throwError(
+        "ReviewService.deleteReview",
+        HttpCodes.NOT_FOUND,
+        AppCodes.REVIEW_NOT_FOUND,
+        `نظری با شناسه ${id} یافت نشد`,
+      );
     }
 
     if (review.user.toString() !== userId && userRole !== "admin") {
-      throw new AppError("شما دسترسی لازم برای حذف این نظر را ندارید", 403);
+      AppError.throwError(
+        "ReviewService.deleteReview",
+        HttpCodes.FORBIDDEN,
+        AppCodes.FORBIDDEN_ACCESS,
+        "شما دسترسی لازم برای حذف این نظر را ندارید",
+      );
     }
 
     await review.deleteOne();
