@@ -8,7 +8,6 @@ import { CustomLogger } from "../utils/logger.js";
 
 const handleZodError = (error: ZodError) => {
   const message = error.issues.map((issue) => issue.message).join(". ");
-  // استفاده از متد create به جای new AppError
   return AppError.create(
     HttpCodes.BAD_REQUEST,
     AppCodes.INVALID_INPUT,
@@ -28,17 +27,27 @@ const handleCastErrorDB = (err: any) => {
 const handleDuplicateFieldsDB = (err: any) => {
   const value = Object.values(err.keyValue)[0];
   const message = `Duplicate field value: "${value}". Please use another value!`;
-  return AppError.create(
-    HttpCodes.BAD_REQUEST,
-    AppCodes.INVALID_INPUT,
-    message,
-  );
+  return AppError.create(HttpCodes.CONFLICT, AppCodes.INVALID_INPUT, message);
 };
 
+const handleJWTError = () =>
+  AppError.create(
+    HttpCodes.UNAUTHORIZED,
+    AppCodes.UNAUTHORIZED_ACCESS,
+    "Invalid token. Please log in again!",
+  );
+
+const handleJWTExpiredError = () =>
+  AppError.create(
+    HttpCodes.UNAUTHORIZED,
+    AppCodes.TOKEN_EXPIRED,
+    "Your token has expired! Please log in again.",
+  );
+
 const sendErrorDev = (err: any, req: Request, res: Response) => {
-  return res.status(err.statusCode || HttpCodes.INTERNAL_SERVER_ERROR).json({
-    status: err.status || "error",
-    appCode: err.appCode || AppCodes.INTERNAL_SERVER_ERROR,
+  return res.status(err.statusCode).json({
+    status: err.status,
+    appCode: err.appCode,
     error: err,
     message: err.message,
     stack: err.stack,
@@ -46,7 +55,6 @@ const sendErrorDev = (err: any, req: Request, res: Response) => {
 };
 
 const sendErrorProd = (err: any, req: Request, res: Response) => {
-  // A) Operational, trusted error: send message to client
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       status: err.status,
@@ -55,8 +63,6 @@ const sendErrorProd = (err: any, req: Request, res: Response) => {
     });
   }
 
-  // B) Programming or other unknown error: don't leak error details
-  // 1) Log error for developer-Pino
   CustomLogger.error(
     "GlobalErrorHandler",
     AppCodes.INTERNAL_SERVER_ERROR,
@@ -67,7 +73,6 @@ const sendErrorProd = (err: any, req: Request, res: Response) => {
     },
   );
 
-  // 2) Send generic message to client
   return res.status(HttpCodes.INTERNAL_SERVER_ERROR).json({
     status: "error",
     appCode: AppCodes.INTERNAL_SERVER_ERROR,
@@ -83,18 +88,23 @@ export const globalErrorHandler = (
 ) => {
   err.statusCode = err.statusCode || HttpCodes.INTERNAL_SERVER_ERROR;
   err.status = err.status || "error";
+  err.appCode = err.appCode || AppCodes.INTERNAL_SERVER_ERROR;
   err.message = err.message || "Internal Server Error";
-
-  if (err.name === "ZodError") err = handleZodError(err);
-  if (err.name === "CastError") err = handleCastErrorDB(err);
-  if (err.code === 11000) err = handleDuplicateFieldsDB(err);
 
   if (config.nodeEnv === "development") {
     sendErrorDev(err, req, res);
   } else if (config.nodeEnv === "production") {
-    let error = { ...err };
+    let error = Object.create(Object.getPrototypeOf(err));
+    Object.assign(error, err);
     error.message = err.message;
     error.name = err.name;
+    error.code = err.code;
+
+    if (error.name === "ZodError") error = handleZodError(error);
+    if (error.name === "CastError") error = handleCastErrorDB(error);
+    if (error.code === 11000) error = handleDuplicateFieldsDB(error);
+    if (error.name === "JsonWebTokenError") error = handleJWTError();
+    if (error.name === "TokenExpiredError") error = handleJWTExpiredError();
 
     sendErrorProd(error, req, res);
   }
