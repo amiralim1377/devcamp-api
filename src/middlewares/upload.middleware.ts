@@ -1,6 +1,8 @@
 import multer from "multer";
 import { Request } from "express";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 const multerSorage = multer.memoryStorage();
 
@@ -13,7 +15,11 @@ const multerFilter = (
     cb(null, true);
   } else {
     cb(
-      new AppError("Not an image! Please upload only images.", 400) as any,
+      AppError.create(
+        HttpCodes.BAD_REQUEST,
+        AppCodes.INVALID_INPUT,
+        "Not an image! Please upload only images.",
+      ) as any,
       false,
     );
   }
