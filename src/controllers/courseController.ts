@@ -1,103 +1,74 @@
-import { NextFunction, Response, Request } from "express";
+import { Response, Request } from "express";
 import courseService from "../services/course.service.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
 
 class CourseController {
-  async getAllCourses(req: Request, res: Response, next: NextFunction) {
-    try {
-      const bootcampId = req.params.bootcampId as string;
-      const courses = await courseService.getAllCourses(req.query, bootcampId);
+  async getAllCourses(req: Request, res: Response) {
+    const bootcampId = req.params.bootcampId as string;
+    const courses = await courseService.getAllCourses(req.query, bootcampId);
 
-      res.status(200).json({
-        status: "success",
-        results: courses.length,
-        data: {
-          courses,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(
+      res,
+      HttpCodes.OK,
+      "Courses retrieved successfully.",
+      { courses },
+      { results: courses.length },
+    );
   }
 
-  async getSingleCourse(req: Request, res: Response, next: NextFunction) {
-    try {
-      const courseId = req.params.id as string;
+  async getSingleCourse(req: Request, res: Response) {
+    const courseId = req.params.id as string;
 
-      const courses = await courseService.getCourse(courseId);
+    const course = await courseService.getCourse(courseId);
 
-      res.status(200).json({
-        status: "success",
-        data: {
-          courses,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(res, HttpCodes.OK, "Course retrieved successfully.", {
+      course,
+    });
   }
 
-  async createCourse(req: Request, res: Response, next: NextFunction) {
-    try {
-      const bootcampId = req.params.bootcampId as string;
+  async createCourse(req: Request, res: Response) {
+    const bootcampId = req.params.bootcampId as string;
 
-      const userId = req.user!._id.toString();
-      const userRole = req.user!.role;
+    const userId = req.user!._id.toString();
+    const userRole = req.user!.role;
 
-      const course = await courseService.createCourse(
-        bootcampId,
-        req.body,
-        userId,
-        userRole,
-      );
+    const course = await courseService.createCourse(
+      bootcampId,
+      req.body,
+      userId,
+      userRole,
+    );
 
-      res.status(201).json({
-        status: "success",
-        data: {
-          course,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(res, HttpCodes.CREATED, "Course created successfully.", {
+      course,
+    });
   }
 
-  async deleteCourse(req: Request, res: Response, next: NextFunction) {
-    try {
-      const courseId = req.params.id as string;
-      const userId = req.user!._id.toString();
-      const userRole = req.user!.role;
+  async deleteCourse(req: Request, res: Response) {
+    const courseId = req.params.id as string;
+    const userId = req.user!._id.toString();
+    const userRole = req.user!.role;
 
-      await courseService.deleteCourse(courseId, userId, userRole);
-      res.status(204).json({
-        status: "success",
-        data: null,
-      });
-    } catch (error) {
-      next(error);
-    }
+    await courseService.deleteCourse(courseId, userId, userRole);
+
+    ApiResponse.send(res, HttpCodes.NO_CONTENT, "Course deleted successfully.");
   }
 
-  async updateCourse(req: Request, res: Response, next: NextFunction) {
-    try {
-      const courseId = req.params.id as string;
-      const userId = req.user!._id.toString();
-      const userRole = req.user!.role;
+  async updateCourse(req: Request, res: Response) {
+    const courseId = req.params.id as string;
+    const userId = req.user!._id.toString();
+    const userRole = req.user!.role;
 
-      const course = await courseService.updateCourse(
-        courseId,
-        req.body,
-        userId,
-        userRole,
-      );
-      res.status(200).json({
-        status: "success",
-        data: {
-          course,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    const course = await courseService.updateCourse(
+      courseId,
+      req.body,
+      userId,
+      userRole,
+    );
+    ApiResponse.send(res, HttpCodes.OK, "Course updated successfully.", {
+      course,
+    });
   }
 }
 
