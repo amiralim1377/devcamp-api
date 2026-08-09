@@ -1,6 +1,8 @@
 import { Response, Request, NextFunction } from "express";
 import sharp from "sharp";
 import { AppError } from "../utils/AppError.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 const resizeBootcampPhoto = async (
   req: Request,
@@ -21,7 +23,13 @@ const resizeBootcampPhoto = async (
 
     next();
   } catch (error) {
-    next(new AppError("Error processing image", 500));
+    next(
+      AppError.create(
+        HttpCodes.INTERNAL_SERVER_ERROR,
+        AppCodes.INTERNAL_SERVER_ERROR,
+        "Error processing image",
+      ),
+    );
   }
 };
 
