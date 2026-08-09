@@ -125,22 +125,30 @@ describe("ApiFeatures class", () => {
   describe("paginate method", () => {
     it("should paginate with default values if page and limit are not provided", () => {
       // 1. Arrange
-      // راهنمایی: queryString رو خالی بذار
+      const queryString = {};
+      //   default page = 1;
+      //   default limit = 100;
       // 2. Act
-      // راهنمایی: متد paginate رو صدا بزن
+      const features = makeSut(queryString);
+      features.paginate();
+
       // 3. Assert
       // راهنمایی: اینجا دو تا expect نیاز داریم
-      // اولی چک کنه mockQuery.skip با عدد 0 صدا زده شده
-      // دومی چک کنه mockQuery.limit با عدد 100 صدا زده شده
+      expect(mockQuery.skip).toHaveBeenCalledWith(0);
+      expect(mockQuery.limit).toHaveBeenCalledWith(100);
     });
 
     it("should calculate skip correctly based on provided page and limit", () => {
       // 1. Arrange
       // راهنمایی: queryString باید page: "3" و limit: "10" داشته باشه (دقت کن از URL رشته میان)
+      const queryString = { page: "3", limit: "10" };
+
       // 2. Act
+      const features = makeSut(queryString);
+      features.paginate();
       // 3. Assert
-      // اولی چک کنه mockQuery.skip با عدد 20 صدا زده شده
-      // دومی چک کنه mockQuery.limit با عدد 10 صدا زده شده
+      expect(mockQuery.skip).toHaveBeenCalledWith(20);
+      expect(mockQuery.limit).toHaveBeenCalledWith(10);
     });
   });
 });
