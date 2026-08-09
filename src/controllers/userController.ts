@@ -1,120 +1,95 @@
-import { NextFunction, Response, Request } from "express";
+import { Response, Request } from "express";
 import userService from "../services/user.service.js";
 import { AppError } from "../utils/AppError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
+import { AppCodes } from "../utils/AppCodes.js";
 
 class UserController {
-  async getAllUsers(req: Request, res: Response, next: NextFunction) {
-    try {
-      const users = await userService.getAllUsers(req.query);
-      res.status(200).json({
-        status: "success",
-        results: users.length,
-        data: { users },
-      });
-    } catch (error) {
-      next(error);
-    }
+  async getAllUsers(req: Request, res: Response) {
+    const users = await userService.getAllUsers(req.query);
+    ApiResponse.send(
+      res,
+      HttpCodes.OK,
+      "Users retrieved successfully.",
+      { users },
+      { results: users.length },
+    );
   }
 
-  async getSingleUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.params.id as string;
+  async getSingleUser(req: Request, res: Response) {
+    const userId = req.params.id as string;
 
-      const user = await userService.getUser(userId);
-      res.status(200).json({
-        status: "success",
-        data: { user },
-      });
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async getMe(req: Request, res: Response, next: NextFunction) {
-    res.status(200).json({
-      status: "success",
-      data: {
-        user: req.user,
-      },
+    const user = await userService.getUser(userId);
+    ApiResponse.send(res, HttpCodes.OK, "User retrieved successfully.", {
+      user,
     });
   }
-  async deleteMe(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.user!._id.toString();
 
-      console.log("userId", userId);
+  async getMe(req: Request, res: Response) {
+    ApiResponse.send(
+      res,
+      HttpCodes.OK,
+      "User profile retrieved successfully.",
+      {
+        user: req.user,
+      },
+    );
+  }
+  async deleteMe(req: Request, res: Response) {
+    const userId = req.user!._id.toString();
 
-      await userService.deleteMe(userId);
-      res.status(204).json({
-        status: "success",
-        data: null,
-      });
-    } catch (error) {
-      next(error);
-    }
+    await userService.deleteMe(userId);
+    ApiResponse.send(res, HttpCodes.NO_CONTENT, "User deleted successfully.");
   }
 
-  async createUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const newUser = await userService.createUser(req.body);
-      res.status(201).json({
-        status: "success",
-        data: { user: newUser },
-      });
-    } catch (error) {
-      next(error);
-    }
+  async createUser(req: Request, res: Response) {
+    const newUser = await userService.createUser(req.body);
+    ApiResponse.send(res, HttpCodes.CREATED, "User created successfully.", {
+      user: newUser,
+    });
   }
 
-  async updateUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (req.body.password || req.body.passwordConfirm) {
-        return next(
-          new AppError("ادمین نمی‌تواند رمز عبور کاربران را تغییر دهد.", 400),
-        );
-      }
-
-      const userId = req.params.id as string;
-      const updatedUser = await userService.updateUser(userId, req.body);
-
-      res.status(200).json({
-        status: "success",
-        data: { user: updatedUser },
-      });
-    } catch (error) {
-      next(error);
+  async updateUser(req: Request, res: Response) {
+    if (req.body.password || req.body.passwordConfirm) {
+      AppError.throwError(
+        "UserController.updateUser",
+        HttpCodes.BAD_REQUEST,
+        AppCodes.INVALID_INPUT,
+        "Admin cannot change user passwords.",
+      );
     }
-  }
-  async updateDetails(req: Request, res: Response, next: NextFunction) {
-    try {
-      if (req.body.password || req.body.passwordConfirm) {
-        return next(new AppError("این مسیر برای تغییر رمز عبور نیست.", 400));
-      }
 
-      const userId = req.user!._id.toString();
-      const updatedUser = await userService.updateUser(userId, req.body);
+    const userId = req.params.id as string;
+    const updatedUser = await userService.updateUser(userId, req.body);
 
-      res.status(200).json({
-        status: "success",
-        data: { user: updatedUser },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(res, HttpCodes.OK, "User updated successfully.", {
+      user: updatedUser,
+    });
   }
 
-  async deleteUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const userId = req.params.id as string;
-
-      await userService.deleteUser(userId);
-      res.status(204).json({
-        status: "success",
-        data: null,
-      });
-    } catch (error) {
-      next(error);
+  async updateDetails(req: Request, res: Response) {
+    if (req.body.password || req.body.passwordConfirm) {
+      AppError.throwError(
+        "UserController.updateDetails",
+        HttpCodes.BAD_REQUEST,
+        AppCodes.INVALID_INPUT,
+        "This route is not for password updates.",
+      );
     }
+    const userId = req.user!._id.toString();
+    const updatedUser = await userService.updateUser(userId, req.body);
+
+    ApiResponse.send(res, HttpCodes.OK, "User details updated successfully.", {
+      user: updatedUser,
+    });
+  }
+
+  async deleteUser(req: Request, res: Response) {
+    const userId = req.params.id as string;
+
+    await userService.deleteUser(userId);
+    ApiResponse.send(res, HttpCodes.NO_CONTENT, "User deleted successfully.");
   }
 }
 
