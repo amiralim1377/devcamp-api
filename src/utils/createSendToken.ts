@@ -4,11 +4,13 @@ import { IUser } from "../models/user.model.js";
 import { signToken } from "./signToken.js";
 import crypto from "crypto";
 import { Session } from "../models/session.model.js";
+import { HttpCodes } from "./HttpCodes.js";
+import { ApiResponse } from "./ApiResponse.js";
 
 // user, statusCode, req, res
 export const createSendToken = async (
   user: IUser,
-  statusCode: number,
+  statusCode: HttpCodes,
   req: Request,
   res: Response,
 ) => {
@@ -60,12 +62,6 @@ export const createSendToken = async (
     expires: refreshTokenExpiresAt,
   });
 
-  // response
-  res.status(statusCode).json({
-    status: "success",
-
-    data: {
-      user,
-    },
-  });
+  // Send standardized response
+  ApiResponse.send(res, statusCode, "عملیات با موفقیت انجام شد", { user });
 };
