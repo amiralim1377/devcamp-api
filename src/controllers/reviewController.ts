@@ -1,99 +1,68 @@
-import { NextFunction, Response, Request } from "express";
+import { Response, Request } from "express";
 import reviewService from "../services/review.service.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import { HttpCodes } from "../utils/HttpCodes.js";
 
 class ReviewController {
-  async getReviews(req: Request, res: Response, next: NextFunction) {
-    try {
-      const bootcampId = req.params.bootcampId as string;
-      const reviews = await reviewService.getReviews(req.query, bootcampId);
+  async getReviews(req: Request, res: Response) {
+    const bootcampId = req.params.bootcampId as string;
+    const reviews = await reviewService.getReviews(req.query, bootcampId);
 
-      res.status(200).json({
-        status: "success",
-        results: reviews.length,
-        data: {
-          reviews,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(
+      res,
+      HttpCodes.OK,
+      "Reviews retrieved successfully.",
+      { reviews },
+      { results: reviews.length },
+    );
   }
 
-  async getReview(req: Request, res: Response, next: NextFunction) {
-    try {
-      const reviewId = req.params.id as string;
-      const review = await reviewService.getReview(reviewId);
-      res.status(200).json({
-        status: "success",
-        data: {
-          review,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+  async getReview(req: Request, res: Response) {
+    const reviewId = req.params.id as string;
+    const review = await reviewService.getReview(reviewId);
+    ApiResponse.send(res, HttpCodes.OK, "Review retrieved successfully.", {
+      review,
+    });
   }
 
-  async createReview(req: Request, res: Response, next: NextFunction) {
-    try {
-      const bootcampId = req.params.bootcampId as string;
-      const userId = req.user!._id.toString();
+  async createReview(req: Request, res: Response) {
+    const bootcampId = req.params.bootcampId as string;
+    const userId = req.user!._id.toString();
 
-      const review = await reviewService.createReview(
-        bootcampId,
-        userId,
-        req.body,
-      );
-      res.status(201).json({
-        status: "success",
-        data: {
-          review,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    const review = await reviewService.createReview(
+      bootcampId,
+      userId,
+      req.body,
+    );
+    ApiResponse.send(res, HttpCodes.CREATED, "Review created successfully.", {
+      review,
+    });
   }
 
-  async updateReview(req: Request, res: Response, next: NextFunction) {
-    try {
-      const reviewId = req.params.id as string;
-      const userId = req.user!._id.toString();
-      const userRole = req.user!.role;
+  async updateReview(req: Request, res: Response) {
+    const reviewId = req.params.id as string;
+    const userId = req.user!._id.toString();
+    const userRole = req.user!.role;
 
-      const review = await reviewService.updateReview(
-        reviewId,
-        userId,
-        userRole,
-        req.body,
-      );
+    const review = await reviewService.updateReview(
+      reviewId,
+      userId,
+      userRole,
+      req.body,
+    );
 
-      res.status(200).json({
-        status: "success",
-        data: {
-          review,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
+    ApiResponse.send(res, HttpCodes.OK, "Review updated successfully.", {
+      review,
+    });
   }
 
-  async deleteReview(req: Request, res: Response, next: NextFunction) {
-    try {
-      const reviewId = req.params.id as string;
-      const userId = req.user!._id.toString();
-      const userRole = req.user!.role;
+  async deleteReview(req: Request, res: Response) {
+    const reviewId = req.params.id as string;
+    const userId = req.user!._id.toString();
+    const userRole = req.user!.role;
 
-      await reviewService.deleteReview(reviewId, userId, userRole);
-
-      res.status(204).json({
-        status: "success",
-        data: null,
-      });
-    } catch (error) {
-      next(error);
-    }
+    await reviewService.deleteReview(reviewId, userId, userRole);
+    ApiResponse.send(res, HttpCodes.NO_CONTENT, "Review deleted successfully.");
   }
 }
 
