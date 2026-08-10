@@ -247,19 +247,19 @@ describe("Bootcamp Service", () => {
       const fakeBootcampId = "invalid_bootcamp_id";
       const fakeUserId = "user123";
       const fakeUserRole = "user";
-      const fakeUpdateData = { title: "updated-bootcamp" };
+      const fakeFileName = "photo_1.jpg";
       const findByIdSpy = vi
         .spyOn(Bootcamp, "findById")
         .mockResolvedValue(null);
       // 2. Act & 3. Assert
       await expect(
-        bootcampService.updateBootcamp(
+        bootcampService.uploadBootcampImage(
           fakeBootcampId,
-          fakeUpdateData,
+          fakeFileName,
           fakeUserId,
           fakeUserRole,
         ),
-      ).rejects.toThrow(`Bootcamp not found with id of ${fakeBootcampId}`);
+      ).rejects.toThrow(`Bootcamp not found`);
 
       expect(findByIdSpy).toHaveBeenCalledWith(fakeBootcampId);
       expect(findByIdSpy).toHaveBeenCalledTimes(1);
@@ -270,7 +270,7 @@ describe("Bootcamp Service", () => {
       const fakeBootcampId = "bootcampId-123";
       const fakeUserId = "user123";
       const fakeUserRole = "user";
-      const fakeUpdateData = { title: "updated-bootcamp" };
+      const fakeFileName = "photo_1.jpg";
       const fakeExistingBootcamp = {
         _id: fakeBootcampId,
         instructor: "real_owner_id",
@@ -282,9 +282,9 @@ describe("Bootcamp Service", () => {
       // 2. Act & 3. Assert
 
       await expect(
-        bootcampService.updateBootcamp(
+        bootcampService.uploadBootcampImage(
           fakeBootcampId,
-          fakeUpdateData,
+          fakeFileName,
           fakeUserId,
           fakeUserRole,
         ),
