@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import bootcampService from "./bootcamp.service.js";
 import { Bootcamp } from "../models/bootcamp.model.js";
+import fs from "fs/promises";
 
 vi.mock("fs/promises");
 
@@ -295,11 +296,71 @@ describe("Bootcamp Service", () => {
     });
 
     it("should upload image and save, without deleting old photo if it's no-photo.jpg", async () => {
-      // این رو تو قدم بعدی با هم می‌نویسیم!
+      // 1. Arrange
+      const fakeBootcampId = "bootcamp123";
+      const fakeFileName = "new_awesome_photo.jpg";
+      const fakeUserId = "real_owner_id";
+      const fakeUserRole = "user";
+
+      const saveSpy = vi.fn().mockResolvedValue(true);
+
+      const fakeBootcampData = {
+        _id: fakeBootcampId,
+        instructor: fakeUserId,
+        photo: "no-photo.jpg",
+        save: saveSpy,
+      };
+
+      const findByIdSpy = vi
+        .spyOn(Bootcamp, "findById")
+        .mockResolvedValue(fakeBootcampData as any);
+
+      const actual = await bootcampService.uploadBootcampImage(
+        fakeBootcampId,
+        fakeFileName,
+        fakeUserId,
+        fakeUserRole,
+      );
+
+      expect(findByIdSpy).toHaveBeenCalledWith(fakeBootcampId);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(actual.photo).toBe(fakeFileName);
     });
 
     it("should delete old photo and save new image if old photo exists", async () => {
-      // این غولِ آخر رو هم با هم می‌نویسیم!
+      // 1. Arrange
+      const fakeBootcampId = "bootcamp123";
+      const fakeUserId = "real_owner_id";
+      const fakeUserRole = "user";
+      const fakeFileName = "new_photo.jpg";
+
+      const saveSpy = vi.fn().mockResolvedValue(true);
+
+      const unlinkSpy = vi
+        .spyOn(fs, "unlink")
+        .mockResolvedValue(undefined as never);
+
+      const fakeBootcampData = {
+        _id: fakeBootcampId,
+        instructor: fakeUserId,
+        photo: "old_photo.jpg",
+        save: saveSpy,
+      };
+
+      vi.spyOn(Bootcamp, "findById").mockResolvedValue(fakeBootcampData as any);
+
+      // 2. Act
+      const actual = await bootcampService.uploadBootcampImage(
+        fakeBootcampId,
+        fakeFileName,
+        fakeUserId,
+        fakeUserRole,
+      );
+
+      // 3. Assert
+      expect(unlinkSpy).toHaveBeenCalledTimes(1);
+      expect(saveSpy).toHaveBeenCalledTimes(1);
+      expect(actual.photo).toBe(fakeFileName);
     });
   });
 });
