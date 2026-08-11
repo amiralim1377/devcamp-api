@@ -167,9 +167,74 @@ describe("AuthService", () => {
       });
     });
 
-    it("should throw an error if user belonging to session no longer exists", async () => {});
+    it("should throw an error if user belonging to session no longer exists", async () => {
+      // Arrange
+      const fakerefreshToken = "this_is_fake_refreshToken";
 
-    it("should update lastUsedAt and return the user if everything is valid", async () => {});
+      const mockSession = { user: "fakeUserId" };
+
+      const refreshTokenHash = crypto
+        .createHash("sha256")
+        .update(fakerefreshToken)
+        .digest("hex");
+
+      const sessionFindOneSpy = vi
+        .spyOn(Session, "findOne")
+        .mockResolvedValue(mockSession as any);
+
+      const userFindById = vi.spyOn(User, "findById").mockResolvedValue(null);
+
+      await expect(
+        authService.refreshSession(fakerefreshToken),
+      ).rejects.toThrow("User no longer exists");
+
+      expect(sessionFindOneSpy).toHaveBeenCalledWith({
+        tokenHash: refreshTokenHash,
+        revokedAt: null,
+      });
+
+      expect(userFindById).toHaveBeenCalledWith(mockSession.user);
+    });
+
+    it("should update lastUsedAt and return the user if everything is valid-Happy Path", async () => {
+      // Arrange
+      const fakerefreshToken = "this_is_fake_refreshToken";
+
+      const mockSession = {
+        user: "fakeUserId",
+        lastUsedAt: null,
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const mockUser = {
+        _id: "fakeUserId",
+        name: "test-user",
+      };
+
+      const refreshTokenHash = crypto
+        .createHash("sha256")
+        .update(fakerefreshToken)
+        .digest("hex");
+
+      const sessionFindOneSpy = vi
+        .spyOn(Session, "findOne")
+        .mockResolvedValue(mockSession as any);
+
+      const userFindByIdSpy = vi
+        .spyOn(User, "findById")
+        .mockResolvedValue(mockUser as any);
+
+      const actual = await authService.refreshSession(fakerefreshToken);
+
+      expect(sessionFindOneSpy).toHaveBeenCalledWith({
+        tokenHash: refreshTokenHash,
+        revokedAt: null,
+      });
+      expect(userFindByIdSpy).toHaveBeenCalledWith(mockSession.user);
+      expect(actual).toEqual(mockUser);
+      expect(mockSession.save).toHaveBeenCalledTimes(1);
+      expect(mockSession.lastUsedAt).toBeInstanceOf(Date);
+    });
   });
 
   describe("updatePassword method", () => {
