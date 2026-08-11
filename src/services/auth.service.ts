@@ -102,6 +102,11 @@ class AuthService {
 
     await user.save();
 
+    await Session.updateMany(
+      { user: userId, revokedAt: null },
+      { revokedAt: new Date() },
+    );
+
     return user;
   }
 }
