@@ -2,12 +2,48 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import bootcampService from "./bootcamp.service.js";
 import { Bootcamp } from "../models/bootcamp.model.js";
 import fs from "fs/promises";
+import { ApiFeatures } from "../utils/ApiFeatures.js";
 
 vi.mock("fs/promises");
+vi.mock("../utils/ApiFeatures.js", () => {
+  return {
+    ApiFeatures: class {
+      filter() {
+        return this;
+      }
+      select() {
+        return this;
+      }
+      sort() {
+        return this;
+      }
+      paginate() {
+        return this;
+      }
+      query = Promise.resolve([{ _id: "bootcamp_1", name: "Mocked Bootcamp" }]);
+    },
+  };
+});
 
-describe("Bootcamp Service", () => {
+describe("BootcampService", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  describe("getAllBootcamps", () => {
+    it("should return all bootcamps using ApiFeatures", async () => {
+      // Arrange
+      const findSpy = vi.spyOn(Bootcamp, "find").mockReturnValue({
+        populate: vi.fn().mockResolvedValue(null),
+      } as any);
+      const fakeQueryString = { page: "1", sort: "name" };
+
+      // Act
+      const actual = await bootcampService.getAllBootcamps(fakeQueryString);
+      // Assert
+      expect(findSpy).toHaveBeenCalledTimes(1);
+      expect(actual).toEqual([{ _id: "bootcamp_1", name: "Mocked Bootcamp" }]);
+    });
   });
 
   describe("getBootcamp", () => {
