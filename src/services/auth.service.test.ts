@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, vitest } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import authService from "./auth.service.js";
 import User from "../models/user.model.js";
 import { Session } from "../models/session.model.js";
@@ -238,10 +238,95 @@ describe("AuthService", () => {
   });
 
   describe("updatePassword method", () => {
-    it("should throw an error if user is not found", async () => {});
+    it("should throw an error if user is not found", async () => {
+      const findOneUserSpy = vi.spyOn(User, "findById").mockReturnValue({
+        select: vi.fn().mockResolvedValue(null),
+      } as any);
 
-    it("should throw an error if current password is wrong", async () => {});
+      const fakeUserId = "fake_user_id";
+      const fakeCurrentPass = "fake_current_password";
+      const fakeNewPass = "fake_New_password";
 
-    it("should update password, revoke sessions, and return user", async () => {});
+      await expect(
+        authService.updatePassword(fakeUserId, fakeCurrentPass, fakeNewPass),
+      ).rejects.toThrow("User not found");
+
+      expect(findOneUserSpy).toHaveBeenCalledWith(fakeUserId);
+    });
+
+    it("should throw an error if current password is wrong", async () => {
+      // Arrange
+      const fakeUserData = {
+        email: "test@gmail.com",
+        password: "wrong-password",
+      };
+      //   in dataBase
+      const mockUser = {
+        email: fakeUserData.email,
+        password: "hashed-true-password",
+        correctPassword: vi.fn().mockResolvedValue(false),
+      };
+      const findOneUserSpy = vi.spyOn(User, "findById").mockReturnValue({
+        select: vi.fn().mockResolvedValue(mockUser),
+      } as any);
+
+      const fakeUserId = "fake_user_id";
+      const fakeCurrentPass = "fake_current_password";
+      const fakeNewPass = "fake_New_password";
+
+      await expect(
+        authService.updatePassword(fakeUserId, fakeCurrentPass, fakeNewPass),
+      ).rejects.toThrow("Incorrect current password");
+
+      expect(mockUser.correctPassword).toHaveBeenCalledWith(
+        fakeCurrentPass,
+        mockUser.password,
+      );
+    });
+
+    it("should update password, revoke sessions, and return user-Happy Path", async () => {
+      // 1. Arrange
+      const fakeUserId = "fake_user_id";
+      const fakeCurrentPass = "fake_current_password";
+      const fakeNewPass = "fake_New_password";
+
+      const mockUser = {
+        password: "old-hashed-password",
+        correctPassword: vi.fn().mockResolvedValue(true),
+        save: vi.fn().mockResolvedValue(true),
+      };
+
+      const findByIdSpy = vi.spyOn(User, "findById").mockReturnValue({
+        select: vi.fn().mockResolvedValue(mockUser),
+      } as any);
+
+      const sessionUpdateManySpy = vi
+        .spyOn(Session, "updateMany")
+        .mockResolvedValue(null as any);
+
+      // 2. Act
+      const actual = await authService.updatePassword(
+        fakeUserId,
+        fakeCurrentPass,
+        fakeNewPass,
+      );
+
+      // 3. Assert
+      expect(mockUser.correctPassword).toHaveBeenCalledWith(
+        fakeCurrentPass,
+        "old-hashed-password",
+      );
+
+      expect(mockUser.password).toBe(fakeNewPass);
+
+      expect(mockUser.save).toHaveBeenCalledTimes(1);
+
+      expect(sessionUpdateManySpy).toHaveBeenCalledWith(
+        { user: fakeUserId, revokedAt: null },
+        { revokedAt: expect.any(Date) },
+      );
+
+      expect(actual).toEqual(mockUser);
+    });
   });
 });
