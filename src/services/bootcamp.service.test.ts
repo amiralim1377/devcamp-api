@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import bootcampService from "./bootcamp.service.js";
 import { Bootcamp } from "../models/bootcamp.model.js";
 import fs from "fs/promises";
-import { ApiFeatures } from "../utils/ApiFeatures.js";
 
 vi.mock("fs/promises");
 vi.mock("../utils/ApiFeatures.js", () => {
