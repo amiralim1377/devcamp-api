@@ -12,6 +12,7 @@ export interface IUser {
   active?: boolean;
   passwordResetToken?: string;
   passwordResetExpires?: Date;
+  passwordChangedAt?: Date;
 }
 
 export interface IUserMethods {
@@ -21,6 +22,8 @@ export interface IUserMethods {
   ): Promise<boolean>;
 
   createPasswordResetToken(): string;
+
+  changedPasswordAfter(JWTTimestamp: number): boolean;
 }
 
 const userSchema = new Schema<IUser, IUserMethods>({
@@ -70,6 +73,7 @@ const userSchema = new Schema<IUser, IUserMethods>({
 
   passwordResetToken: String,
   passwordResetExpires: Date,
+  passwordChangedAt: Date,
 });
 
 userSchema.set("toJSON", {
@@ -86,6 +90,12 @@ userSchema.pre("save", async function () {
 
   this.password = await bcrypt.hash(this.password, 12);
   this.passwordConfirm = undefined;
+});
+
+userSchema.pre("save", function (this: any) {
+  if (!this.isModified("password") || this.isNew) return;
+
+  this.passwordChangedAt = new Date(Date.now() - 1000);
 });
 
 userSchema.pre(/^find/ as any, function (this: mongoose.Query<any, any>) {
