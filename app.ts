@@ -45,7 +45,7 @@ app.use(helmet());
 app.set("trust proxy", 1);
 
 // 👈 اتصال pino-http به لاگر
-app.use(pinoHttp({ logger: pinoLogger }));
+app.use((pinoHttp as any)({ logger: pinoLogger }));
 
 setupSwagger(app);
 
