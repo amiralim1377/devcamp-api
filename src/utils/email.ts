@@ -1,7 +1,7 @@
 import nodemailer from "nodemailer";
 import { config } from "../config/index.js";
 
-interface EmailOptions {
+export interface EmailOptions {
   email: string;
   subject: string;
   message: string;
